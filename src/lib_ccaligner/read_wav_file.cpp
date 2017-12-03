@@ -6,13 +6,13 @@
 
 #include "read_wav_file.h"
 
-int findIndex(std::vector<unsigned char>& fileData, std::string chunk)
+int findIndex(std::vector<unsigned char>& fileData, const std::string& chunk)
 {
     auto it = std::search(fileData.begin(), fileData.end(), chunk.begin(), chunk.end());
     return (int)(it-fileData.begin());  //returns beginning of the string passed through "chunk" ('fmt' / 'data')
 }
 
-WaveFileData::WaveFileData(std::string fileName, bool isRawFile)    //file is stored on disk
+WaveFileData::WaveFileData(const std::string& fileName, bool isRawFile)    //file is stored on disk
 {
     _fileName = fileName;
     _samples.resize(0);
@@ -27,7 +27,7 @@ WaveFileData::WaveFileData(openMode mode, bool isRawFile)           //data being
     _isRawFile = isRawFile;
 }
 
-bool WaveFileData::checkValidWave (std::vector<unsigned char>& fileData)
+bool WaveFileData::checkValidWave (const std::vector<unsigned char>& fileData)
 {
     /*Offset  Size  Name             Description
      * 0         4   ChunkID          Contains the letters "RIFF" in ASCII form
@@ -228,24 +228,34 @@ bool WaveFileData::openFile ()
         FATAL(EXIT_FILE_NOT_FOUND, "Unable to open file : %s", _fileName.c_str());
     }
 
-
-    /*
-     * When reading characters, std::istream_iterator skips whitespace by default
-     * (unless disabled with std::noskipws or equivalent)..
-     * http://www.enseignement.polytechnique.fr/informatique/INF478/docs/Cpp/en/cpp/iterator/istream_iterator.html#Notes
-     */
-
-    std::noskipws(infile);
-    std::istream_iterator<unsigned char> begin (infile), end;
-
     LOG("Reading file data");
 
-    if (_isRawFile) {
-        _samples = std::vector<int16_t>(begin, end);
-        LOG("File data read");
-        LOG("Decoding is skipped since it is raw audio file");
-        return true;
+    if (_isRawFile) { // handle raw audio files
+        infile.seekg(0, std::ios::end);
+        std::streamsize size = infile.tellg();
+        infile.seekg(0, std::ios::beg);
+
+        _samples = std::vector<int16_t>(size/2); // size is in unit of byte, while one int_16 uses 2 bytes
+        if (infile.read(reinterpret_cast<char*>(_samples.data()), size)) {
+            LOG("File data read");
+            LOG("Decoding is skipped since it is raw audio file");
+            return true;
+        }
+        else {
+            FATAL(EXIT_INVALID_FILE, "Unable to read from file : %s", _fileName.c_str());
+            return false;
+        }
     }
+
+
+    /*
+    * When reading characters, std::istream_iterator skips whitespace by default
+    * (unless disabled with std::noskipws or equivalent)..
+    * http://www.enseignement.polytechnique.fr/informatique/INF478/docs/Cpp/en/cpp/iterator/istream_iterator.html#Notes
+    */
+
+    std::noskipws(infile);
+    std::istream_iterator<unsigned char> begin(infile), end;
     std::vector<unsigned char> fileData (begin, end);   //read complete file content
 
     LOG("File data read and stored in buffer");
@@ -564,9 +574,10 @@ bool WaveFileData::readStream()
 bool WaveFileData::readStreamUsingBuffer()
 {
     if (_isRawFile) {
-        int16_t byteData;
+        unsigned char byteData, byteData2;
         while (std::cin >> std::noskipws >> byteData) {
-            _samples.push_back(byteData);  //storing the stream into sample directly
+            std::cin >> std::noskipws >> byteData2;
+            _samples.push_back(((byteData2 << 8) | byteData));  //storing the stream into sample directly
         }
         return true;
     }
@@ -608,7 +619,6 @@ bool WaveFileData::read()   //decided the function based on set mode
         default                   : FATAL(EXIT_INVALID_FILE, "Error choosing opening mode, please report!");
 
     }
-
     return true;
 }
 
@@ -617,17 +627,17 @@ bool WaveFileData::read()   //decided the function based on set mode
  * https://stackoverflow.com/a/2386134/6487831
  */
 
-unsigned long WaveFileData::fourBytesToInt (std::vector<unsigned char>& fileData, int index)
+unsigned long WaveFileData::fourBytesToInt (const std::vector<unsigned char>& fileData, int index)
 {
     return ((fileData[index + 3] << 24) | (fileData[index + 2] << 16) | (fileData[index + 1] << 8) | fileData[index]);
 }
 
-int WaveFileData::twoBytesToInt (std::vector<unsigned char>& fileData, int index)
+int WaveFileData::twoBytesToInt (const std::vector<unsigned char>& fileData, int index)
 {
     return ((fileData[index + 1] << 8) | fileData[index]);
 }
 
-std::vector<int16_t> WaveFileData::getSamples()
+const std::vector<int16_t>& WaveFileData::getSamples() const noexcept
 {
     return _samples;    //returning sample vector
 }

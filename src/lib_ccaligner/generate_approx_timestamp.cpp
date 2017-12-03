@@ -18,7 +18,7 @@ CurrentSub::CurrentSub(SubtitleItem *sub)
 
 }
 
-void CurrentSub::printToSRT(std::string fileName, outputOptions printOption)
+void CurrentSub::printToSRT(const std::string& fileName, outputOptions printOption) const
 {
     std::ofstream out;
     out.open(fileName, std::ofstream::app);
@@ -58,7 +58,7 @@ void CurrentSub::printToSRT(std::string fileName, outputOptions printOption)
     out.close();
 }
 
-void CurrentSub::printToConsole(std::string fileName)
+void CurrentSub::printToConsole(const std::string& fileName) const
 {
     for(int i=0;i<_sub->getWordCount();i++)
     {
@@ -70,7 +70,7 @@ void CurrentSub::printToConsole(std::string fileName)
     }
 }
 
-inline int CurrentSub::getDuration (long startTime, long endTime)
+inline int CurrentSub::getDuration (long startTime, long endTime) const noexcept
 {
     if(endTime < startTime)
     {
@@ -82,9 +82,9 @@ inline int CurrentSub::getDuration (long startTime, long endTime)
 
 }
 
-inline double CurrentSub::getWordWeight (std::string word)
+inline double CurrentSub::getWordWeight (const std::string& word) const noexcept
 {
-    double weight = (double) word.size() / (double) _sentenceLength;    //word weight as function of word length : sentence length
+    double weight = static_cast<double>(word.size()) / static_cast<double>(_sentenceLength);    //word weight as function of word length : sentence length
     return weight;
 
 }
@@ -182,16 +182,7 @@ void CurrentSub::alignNonRecognised(recognisedBlock currBlock)
 
 }
 
-CurrentSub::~CurrentSub()
-{
-    _sub = NULL;
-    _wordNumber = 0;
-    _sentenceLength = 0;
-    _wordCount = 0;
-    _dialogueDuration = 0;
-}
-
-ApproxAligner::ApproxAligner(std::string fileName, outputFormats outputFormat)
+ApproxAligner::ApproxAligner(const std::string& fileName, outputFormats outputFormat)
 {
     _fileName = fileName;
     _outputFormat = outputFormat;
@@ -208,8 +199,8 @@ ApproxAligner::ApproxAligner(Params * parameters)
 
 std::vector<SubtitleItem *, std::allocator<SubtitleItem *>> ApproxAligner::align()
 {
-    SubtitleParserFactory *subParserFactory = new SubtitleParserFactory(_fileName);
-    SubtitleParser *parser = subParserFactory->getParser();
+    SubtitleParserFactory subParserFactory(_fileName);
+    SubtitleParser *parser = subParserFactory.getParser();
     std::vector <SubtitleItem*> subtitles = parser->getSubtitles();
 
     int subCount = 1;
@@ -217,8 +208,8 @@ std::vector<SubtitleItem *, std::allocator<SubtitleItem *>> ApproxAligner::align
 
     for(SubtitleItem *sub : subtitles)
     {
-        CurrentSub * currSub = new CurrentSub(sub);
-        currSub->run();
+        CurrentSub currSub(sub);
+        currSub.run();
 
         switch (_outputFormat)  //decide on basis of set output format
         {
@@ -234,7 +225,7 @@ std::vector<SubtitleItem *, std::allocator<SubtitleItem *>> ApproxAligner::align
             case karaoke:   subCount = printKaraokeContinuous(_outputFileName, subCount, sub, printBothWihoutColors);
                 break;
 
-            case console:   currSub->printToConsole(_outputFileName);
+            case console:   currSub.printToConsole(_outputFileName);
                 break;
 
             default:        std::cout<<"An error occurred while choosing output format!";
@@ -245,9 +236,4 @@ std::vector<SubtitleItem *, std::allocator<SubtitleItem *>> ApproxAligner::align
 
     printFileEnd(_outputFileName, _outputFormat);
     return subtitles;
-}
-
-ApproxAligner::~ApproxAligner()
-{
-
 }
