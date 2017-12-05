@@ -564,7 +564,7 @@ void Params::validateParams()
 
     if(verbosity)
     {
-        should_log = true;
+        //should_log = true;
         printParams();
     }
 }

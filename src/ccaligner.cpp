@@ -43,7 +43,7 @@ void printFooter()
 CCAligner::CCAligner(Params* parameters)
 {
     _parameters = parameters;
-    should_log = _parameters->verbosity ;
+    //should_log = _parameters->verbosity;
 }
 
 int CCAligner::initAligner()
@@ -60,7 +60,7 @@ int CCAligner::initAligner()
 
     else
     {
-        FATAL(EXIT_INVALID_PARAMETERS, "Unsupported Aligner Type!");
+        fatalstream(EXIT_INVALID_PARAMETERS) << "Unsupported Aligner Type!";
     }
 
     return 1;
