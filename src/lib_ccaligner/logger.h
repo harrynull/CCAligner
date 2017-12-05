@@ -99,6 +99,7 @@ public:
         }
         
         ~Log() {
+            _ss << std::endl;
             _logger.log(_ss, _level);
             if (_exitCode != DO_NOT_EXIT) std::exit(_exitCode);
         }

@@ -34,7 +34,7 @@ bool generate(std::vector <SubtitleItem*> subtitles, grammarName name)
     }
 
     //create temporary directories in case they don't exist
-    LOG("Creating temporary directories at tempFiles/");
+    debugstream << "Creating temporary directories at tempFiles/";
 
 #ifndef WIN32
     int rv = systemGetStatus("mkdir -p tempFiles/corpus tempFiles/dict tempFiles/vocab tempFiles/fsg tempFiles/lm");
@@ -44,11 +44,11 @@ bool generate(std::vector <SubtitleItem*> subtitles, grammarName name)
   
     if (rv != 0)
     {
-        FATAL(EXIT_FAILURE, "Unable to create directory tempFiles/ : %s", strerror(errno));
+        fatalstream(EXIT_FAILURE) << "Unable to create directory tempFiles/ : " << strerror(errno);
     }
 
 
-    LOG("Directories created successfully!");
+    debugstream << "Directories created successfully!";
 
     std::ofstream corpusDump, phoneticCorpusDump, fsgDump, vocabDump, dictDump, logDump;
 
@@ -68,12 +68,12 @@ bool generate(std::vector <SubtitleItem*> subtitles, grammarName name)
 
     catch(std::system_error& e)
     {
-        FATAL(EXIT_FAILURE, e.code().message().c_str());
+        fatalstream(EXIT_FAILURE) << e.code().message();
     }
 
     if(name == corpus || name == complete_grammar)
     {
-		LOG("Creating Corpus : tempFiles/corpus/corpus.txt");
+		debugstream << "Creating Corpus : tempFiles/corpus/corpus.txt";
 
         try
         {
@@ -83,14 +83,14 @@ bool generate(std::vector <SubtitleItem*> subtitles, grammarName name)
 
         catch(std::system_error& e)
         {
-            FATAL(EXIT_FAILURE, e.code().message().c_str());
+            fatalstream(EXIT_FAILURE) << e.code().message();
         }
 
     }
 
     if(name == phone_lm || name == complete_grammar)
     {
-        LOG("Creating Phonetic Corpus : tempFiles/corpus/phoneticCorpus.txt");
+        debugstream << "Creating Phonetic Corpus : tempFiles/corpus/phoneticCorpus.txt";
 
         try
         {
@@ -100,7 +100,7 @@ bool generate(std::vector <SubtitleItem*> subtitles, grammarName name)
 
         catch(std::system_error& e)
         {
-            FATAL(EXIT_FAILURE, e.code().message().c_str());
+            fatalstream(EXIT_FAILURE) << e.code().message();
         }
 
     }
@@ -116,7 +116,7 @@ bool generate(std::vector <SubtitleItem*> subtitles, grammarName name)
 
             catch(std::system_error& e)
             {
-                FATAL(EXIT_FAILURE, e.code().message().c_str());
+                fatalstream(EXIT_FAILURE) << e.code().message();
             }
 
             corpusDump << "<s> " << stringToLower(sub->getDialogue()) << " </s>\n";
@@ -132,7 +132,7 @@ bool generate(std::vector <SubtitleItem*> subtitles, grammarName name)
 
             catch(std::system_error& e)
             {
-                FATAL(EXIT_FAILURE, e.code().message().c_str());
+                fatalstream(EXIT_FAILURE) << e.code().message();
             }
 
             int numberOfWords = sub->getWordCount();
@@ -165,7 +165,7 @@ bool generate(std::vector <SubtitleItem*> subtitles, grammarName name)
 
             catch(std::system_error& e)
             {
-                FATAL(EXIT_FAILURE, e.code().message().c_str());
+                fatalstream(EXIT_FAILURE) << e.code().message().c_str();
             }
 
             int numberOfWords = sub->getWordCount();
@@ -200,16 +200,16 @@ bool generate(std::vector <SubtitleItem*> subtitles, grammarName name)
 
     if(name == vocab || name == complete_grammar)
     {
-		LOG("Creating vocabulary...");
+		debugstream << "Creating vocabulary...";
 
         rv = systemGetStatus("text2wfreq < tempFiles/corpus/corpus.txt 2>tempFiles/grammar.log | wfreq2vocab > tempFiles/vocab/complete.vocab 2>tempFiles/grammar_wfreq2vocab.log");
 
         if (rv != 0)
         {
-            FATAL(EXIT_FAILURE, "Something went wrong while creating vocabulary!");
+            fatalstream(EXIT_FAILURE) << "Something went wrong while creating vocabulary!";
         }
 
-		LOG("Vocabulary created!");
+		debugstream << "Vocabulary created!";
     }
 
     if(name == dict || name == complete_grammar)
@@ -225,7 +225,7 @@ bool generate(std::vector <SubtitleItem*> subtitles, grammarName name)
 
             catch(std::system_error& e)
             {
-                FATAL(EXIT_FAILURE, e.code().message().c_str());
+                fatalstream(EXIT_FAILURE) << e.code().message();
             }
 
             std::string word;
@@ -256,31 +256,31 @@ bool generate(std::vector <SubtitleItem*> subtitles, grammarName name)
 
         else
         {
-			LOG("Creating the Dictionary, this might take a little time depending "
-                "on your TensorFlow configuration : tempFiles/dict/complete.dict");
+			debugstream << "Creating the Dictionary, this might take a little time depending "
+                "on your TensorFlow configuration : tempFiles/dict/complete.dict";
 
             rv = systemGetStatus("g2p-seq2seq --decode tempFiles/vocab/complete.vocab --model g2p-seq2seq-cmudict/ > tempFiles/dict/complete.dict");
 
             if (rv != 0)
             {
-                FATAL(EXIT_FAILURE, "Something went wrong while creating dictionary!");
+                fatalstream(EXIT_FAILURE) << "Something went wrong while creating dictionary!";
             }
 
-			LOG("Dictionary created");
+			debugstream << "Dictionary created";
         }
 
     }
 
     if(name == lm || name == complete_grammar )
     {
-        LOG("Creating Biased Language Model : tempFiles/lm/complete.lm");
+        debugstream << "Creating Biased Language Model : tempFiles/lm/complete.lm";
 
         if(generateQuickLM)
         {
             rv = systemGetStatus("perl quick_lm.pl -s tempFiles/corpus/corpus.txt 2>tempFiles/grammar.log");
             if (rv != 0)
             {
-                FATAL(EXIT_FAILURE, "Something went wrong while creating Phonetic Language Model!");
+                fatalstream(EXIT_FAILURE) << "Something went wrong while creating Phonetic Language Model!";
             }
 #ifndef WIN32
             rv = systemGetStatus("mv tempFiles/corpus/corpus.txt.arpabo tempFiles/lm/complete.lm 2>tempFiles/grammar.log");
@@ -290,7 +290,7 @@ bool generate(std::vector <SubtitleItem*> subtitles, grammarName name)
 
             if (rv != 0)
             {
-                FATAL(EXIT_FAILURE, "Something went wrong while moving phonetic model!");
+                fatalstream(EXIT_FAILURE) << "Something went wrong while moving phonetic model!";
             }
         }
 
@@ -300,28 +300,28 @@ bool generate(std::vector <SubtitleItem*> subtitles, grammarName name)
 
             if (rv != 0)
             {
-                FATAL(EXIT_FAILURE, "Something went wrong while creating idngram file!");
+                fatalstream(EXIT_FAILURE) << "Something went wrong while creating idngram file!";
             }
 
             rv = systemGetStatus("idngram2lm -vocab_type 0 -idngram tempFiles/lm/lm.idngram -vocab tempFiles/vocab/complete.vocab  -arpa tempFiles/lm/complete.lm 2>tempFiles/grammar.log");
 
             if (rv != 0)
             {
-                FATAL(EXIT_FAILURE, "Something went wrong while creating biased language model!");
+                fatalstream(EXIT_FAILURE) << "Something went wrong while creating biased language model!";
             }
         }
-		LOG("Biased Language Model created successfully!");
+		debugstream << "Biased Language Model created successfully!";
 
     }
 
     if(name == phone_lm  || name == complete_grammar )
     {
-        LOG("Creating Phonetic Language Model : tempFiles/lm/phone.lm");
+        debugstream << "Creating Phonetic Language Model : tempFiles/lm/phone.lm";
 
         rv = systemGetStatus("perl quick_lm.pl -s tempFiles/corpus/phoneticCorpus.txt 2>tempFiles/grammar.log");
         if (rv != 0)
         {
-            FATAL(EXIT_FAILURE, "Something went wrong while creating Phonetic Language Model!");
+            fatalstream(EXIT_FAILURE) << "Something went wrong while creating Phonetic Language Model!";
         }
 #ifndef WIN32
         rv = systemGetStatus("mv tempFiles/corpus/phoneticCorpus.txt.arpabo tempFiles/lm/ 2>tempFiles/grammar.log");
@@ -330,11 +330,11 @@ bool generate(std::vector <SubtitleItem*> subtitles, grammarName name)
 #endif
         if (rv != 0)
         {
-            FATAL(EXIT_FAILURE, "Something went wrong while moving phonetic model!");
+            fatalstream(EXIT_FAILURE) << "Something went wrong while moving phonetic model!";
         }
     }
 
-    LOG("Grammar files created!");
+    debugstream << "Grammar files created!";
 
     return true;
 
