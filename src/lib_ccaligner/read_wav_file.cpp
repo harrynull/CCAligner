@@ -531,13 +531,13 @@ bool WaveFileData::readSamplesFromStream(int numberOfSamples)
 
         if(bytesRead > numberOfSamples * 2)
         {
-            std::cout<<"\nLooks like number of bytes exceeds the expected amount! Still processing.";
+            LOG("\nLooks like number of bytes exceeds the expected amount! Still processing.");
         }
     }
 
     if(bytesRead < numberOfSamples * 2)
     {
-        std::cout<<"\nReceived less number of samples than the expected amount! Still processing.";
+		LOG("\nReceived less number of samples than the expected amount! Still processing.");
     }
 
     LOG("Samples read and decoded!");
@@ -564,7 +564,7 @@ bool WaveFileData::readStream()
 
     if(remainingBytes != 2 * numberOfSamples)
     {
-        std::cout<<"\nLooks like there is some error in reading samples from the file. Still proceeding.";
+        LOG("\nLooks like there is some error in reading samples from the file. Still proceeding.");
     }
 
     return readSamplesFromStream(numberOfSamples);              //reading samples

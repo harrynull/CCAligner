@@ -35,12 +35,12 @@ bool PocketsphinxAligner::processFiles()
     LOG("Initialising Aligner using PocketSphinx");
     LOG("Audio Filename: %s Subtitle filename: %s", _audioFileName.c_str(), _subtitleFileName.c_str());
 
-    std::cout << "Reading and processing subtitles...\n";
+	LOG("Reading and processing subtitles...");
     _subParserFactory = std::unique_ptr<SubtitleParserFactory>(new SubtitleParserFactory(_subtitleFileName));
     _parser = _subParserFactory->getParser();
     _subtitles = _parser->getSubtitles();
 
-    std::cout << "Reading and decoding audio samples...\n";
+	LOG("Reading and decoding audio samples...");
     if(_parameters->readStream)
         _file = std::unique_ptr<WaveFileData>(new WaveFileData(readStreamDirectly, _parameters->audioIsRaw));
     else
@@ -57,12 +57,12 @@ bool PocketsphinxAligner::generateGrammar(grammarName name)
 {
     LOG("Generating Grammar based on subtitles, Grammar Name: %d ", name);
 
-    std::cout << "Generating language model and grammar files...\n";
+	LOG("Generating language model and grammar files...");
 
     if(_parameters->grammarType == complete_grammar || _parameters->grammarType == dict)
     {
-        std::cout << "Note: You have chosen to generate a dictionary. Based on your TensorFlow configuration,\n";
-        std::cout << "this may take some time, please be patient. For alternatives, see docs.\n";
+		LOG("Note: You have chosen to generate a dictionary. Based on your TensorFlow configuration,");
+		LOG("this may take some time, please be patient. For alternatives, see docs.");
     }
 
     return generate(_subtitles, name);
@@ -72,7 +72,6 @@ bool PocketsphinxAligner::initDecoder(const std::string& modelPath, const std::s
 {
     LOG("Initialising PocketSphinx decoder");
 
-    std::cout << "Initialising PocketSphinx decoder..\n";
     _modelPath = modelPath;
     _lmPath = lmPath;
     _dictPath = dictPath;
@@ -166,8 +165,6 @@ bool PocketsphinxAligner::initDecoder(const std::string& modelPath, const std::s
 bool PocketsphinxAligner::initPhonemeDecoder(const std::string& phoneticlmPath, const std::string& phonemeLogPath)
 {
     LOG("Initialising PocketSphinx phoneme decoder");
-
-    std::cout << "Initialising PocketSphinx phoneme decoder..\n";
 
     _phoneticlmPath = phoneticlmPath;
     _phonemeLogPath = phonemeLogPath;
@@ -435,7 +432,7 @@ bool PocketsphinxAligner::recognise()
         recognitionWindow = _sampleWindow;
     }
 
-    std::cout << "Recognising and aligning..\n";
+    LOG("Recognising and aligning..");
 
     for (SubtitleItem *sub : _subtitles)
     {
@@ -533,14 +530,14 @@ bool PocketsphinxAligner::recognise()
             case karaoke:   subCount = printKaraokeContinuous(_outputFileName, subCount, sub, _parameters->printOption);
                 break;
 
-            default:        std::cout<<"An error occurred while choosing output format!";
+            default:        FATAL(EXIT_UNKNOWN, "An error occurred while choosing output format!");
                 exit(2);
         }
     }
 
     printFileEnd(_outputFileName, _parameters->outputFormat);
 
-    std::cout << "Finished recognition and alignment..\n";
+    LOG("Finished recognition and alignment..");
 
     return true;
 }
@@ -634,7 +631,7 @@ int PocketsphinxAligner::findTranscribedWordTimings(cmd_ln_t *config, ps_decoder
 
 bool PocketsphinxAligner::transcribe()
 {
-    std::cout << "Transcribing...\n";
+    LOG("Transcribing...");
 
     //pointer to samples
     const int16_t *sample = _samples.data();
@@ -702,7 +699,7 @@ bool PocketsphinxAligner::transcribe()
 
     printTranscriptionFooter(_outputFileName, _parameters->outputFormat);
 
-    std::cout << "Finished transcription.\n";
+    LOG("Finished transcription.");
 
     return true;
 }
@@ -835,8 +832,7 @@ bool PocketsphinxAligner::alignWithFSG()
             case karaoke:   subCount = printKaraokeContinuous(_outputFileName, subCount, sub, _parameters->printOption);
                 break;
 
-            default:        std::cout<<"An error occurred while choosing output format!";
-                exit(2);
+            default:        FATAL(EXIT_UNKNOWN, "An error occurred while choosing output format!");
         }
 
 

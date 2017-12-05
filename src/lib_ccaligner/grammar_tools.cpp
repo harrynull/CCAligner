@@ -73,7 +73,7 @@ bool generate(std::vector <SubtitleItem*> subtitles, grammarName name)
 
     if(name == corpus || name == complete_grammar)
     {
-        std::cout<<"Creating Corpus : tempFiles/corpus/corpus.txt\n";
+		LOG("Creating Corpus : tempFiles/corpus/corpus.txt");
 
         try
         {
@@ -90,7 +90,7 @@ bool generate(std::vector <SubtitleItem*> subtitles, grammarName name)
 
     if(name == phone_lm || name == complete_grammar)
     {
-        std::cout<<"Creating Phonetic Corpus : tempFiles/corpus/phoneticCorpus.txt\n";
+        LOG("Creating Phonetic Corpus : tempFiles/corpus/phoneticCorpus.txt");
 
         try
         {
@@ -200,12 +200,16 @@ bool generate(std::vector <SubtitleItem*> subtitles, grammarName name)
 
     if(name == vocab || name == complete_grammar)
     {
+		LOG("Creating vocabulary...");
+
         rv = systemGetStatus("text2wfreq < tempFiles/corpus/corpus.txt 2>tempFiles/grammar.log | wfreq2vocab > tempFiles/vocab/complete.vocab 2>tempFiles/grammar_wfreq2vocab.log");
 
         if (rv != 0)
         {
             FATAL(EXIT_FAILURE, "Something went wrong while creating vocabulary!");
         }
+
+		LOG("Vocabulary created!");
     }
 
     if(name == dict || name == complete_grammar)
@@ -252,21 +256,24 @@ bool generate(std::vector <SubtitleItem*> subtitles, grammarName name)
 
         else
         {
-            std::cout<<"Creating the Dictionary, this might take a little time depending "
-                "on your TensorFlow configuration : tempFiles/dict/complete.dict\n";
+			LOG("Creating the Dictionary, this might take a little time depending "
+                "on your TensorFlow configuration : tempFiles/dict/complete.dict");
+
             rv = systemGetStatus("g2p-seq2seq --decode tempFiles/vocab/complete.vocab --model g2p-seq2seq-cmudict/ > tempFiles/dict/complete.dict");
 
             if (rv != 0)
             {
                 FATAL(EXIT_FAILURE, "Something went wrong while creating dictionary!");
             }
+
+			LOG("Dictionary created");
         }
 
     }
 
     if(name == lm || name == complete_grammar )
     {
-        std::cout<<"Creating Biased Language Model : tempFiles/lm/complete.lm\n";
+        LOG("Creating Biased Language Model : tempFiles/lm/complete.lm");
 
         if(generateQuickLM)
         {
@@ -303,13 +310,13 @@ bool generate(std::vector <SubtitleItem*> subtitles, grammarName name)
                 FATAL(EXIT_FAILURE, "Something went wrong while creating biased language model!");
             }
         }
-
+		LOG("Biased Language Model created successfully!");
 
     }
 
     if(name == phone_lm  || name == complete_grammar )
     {
-        std::cout<<"Creating Phonetic Language Model : tempFiles/lm/phone.lm\n";
+        LOG("Creating Phonetic Language Model : tempFiles/lm/phone.lm");
 
         rv = systemGetStatus("perl quick_lm.pl -s tempFiles/corpus/phoneticCorpus.txt 2>tempFiles/grammar.log");
         if (rv != 0)
