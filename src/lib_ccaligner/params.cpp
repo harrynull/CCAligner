@@ -1,14 +1,13 @@
 /*
- * Author   : Saurabh Shrivastava
- * Email    : saurabh.shrivastava54@gmail.com
- * Link     : https://github.com/saurabhshri
- */
+* Author   : Saurabh Shrivastava
+* Email    : saurabh.shrivastava54@gmail.com
+* Link     : https://github.com/saurabhshri
+*/
 
 #include "params.h"
 
 // Default paths.
-namespace
-{
+namespace {
     constexpr auto defaultModelPath = "model/";
     constexpr auto defaultLmPath = "tempFiles/lm/complete.lm";
     constexpr auto defaultDictPath = "tempFiles/dict/complete.dict";
@@ -19,31 +18,30 @@ namespace
 Params::Params() noexcept
     : localTime(32, '\0'),
 
-      modelPath(defaultModelPath),
-      lmPath(defaultLmPath),
-      dictPath(defaultDictPath),
-      fsgPath(defaultFsgPath),
-      phoneticlmPath(defaultPhoneticLmPath),
+    modelPath(defaultModelPath),
+    lmPath(defaultLmPath),
+    dictPath(defaultDictPath),
+    fsgPath(defaultFsgPath),
+    phoneticlmPath(defaultPhoneticLmPath),
 
-      searchWindow(3),
-      audioWindow(0),
-      sampleWindow(0),
+    searchWindow(3),
+    audioWindow(0),
+    sampleWindow(0),
 
-      chosenAlignerType(asrAligner),
-      grammarType(complete_grammar),
-      outputFormat(xml),
-      printOption(printBothWithDistinctColors),
-      useFSG(),
-      transcribe(),
-      useBatchMode(),
-      useExperimentalParams(),
-      searchPhonemes(),
-      displayRecognised(true),
-      readStream(),
-      quickDict(),
-      quickLM(),
-      audioIsRaw()
-{
+    chosenAlignerType(asrAligner),
+    grammarType(complete_grammar),
+    outputFormat(xml),
+    printOption(printBothWithDistinctColors),
+    useFSG(),
+    transcribe(),
+    useBatchMode(),
+    useExperimentalParams(),
+    searchPhonemes(),
+    displayRecognised(true),
+    readStream(),
+    quickDict(),
+    quickLM(),
+    audioIsRaw() {
     // Using date and time for log filename.
     const auto now = std::time(nullptr);
     localTime.erase(std::strftime(&localTime.front(), localTime.size(), "%d-%m-%Y-%H-%M-%S", std::localtime(&now)));
@@ -53,22 +51,19 @@ Params::Params() noexcept
     phonemeLogPath = "tempFiles/phoneme-" + localTime + ".log";
 }
 
-void Params::inputParams(int argc, char *argv[])
-{
-    for(int i=1;i<argc;i++)         //parsing arguments
+void Params::inputParams(int argc, char *argv[]) {
+    for (int i = 1; i<argc; i++)         //parsing arguments
     {
         std::string subParam, paramPrefix(argv[i]);
 
-        if(i+1 < argc)
-            subParam = argv[i+1];
+        if (i + 1 < argc)
+            subParam = argv[i + 1];
 
         else
             subParam = "";
 
-        if(paramPrefix== "-wav")
-        {
-            if(i+1 > argc)
-            {
+        if (paramPrefix == "-wav") {
+            if (i + 1 > argc) {
                 fatalstream(EXIT_INCOMPLETE_PARAMETERS) << "-wav requires a path to valid wave!";
             }
 
@@ -88,26 +83,30 @@ void Params::inputParams(int argc, char *argv[])
             audioIsRaw = true;
             readStream = true;
         }
-        else if(paramPrefix== "-srt")
-        {
-            if(i+1 > argc)
-            {
+        else if (paramPrefix == "-srt") {
+            if (i + 1 > argc) {
                 fatalstream(EXIT_INCOMPLETE_PARAMETERS) << "-srt requires a path to valid SubRip subtitle file!";
             }
 
+            usingTranscript = false;
             subtitleFileName = subParam;
             i++;
         }
+        else if (paramPrefix == "-txt") {
+            if (i + 1 > argc) {
+                fatalstream(EXIT_INCOMPLETE_PARAMETERS) << "-txt requires a path to valid transcript file!";
+            }
 
-        else if(paramPrefix== "-" || paramPrefix== "-stdin")
-        {
+            usingTranscript = true;
+            transcriptFileName = subParam;
+            i++;
+        }
+        else if (paramPrefix == "-" || paramPrefix == "-stdin") {
             readStream = true;
         }
 
-        else if(paramPrefix== "-out")
-        {
-            if(i+1 > argc)
-            {
+        else if (paramPrefix == "-out") {
+            if (i + 1 > argc) {
                 fatalstream(EXIT_INCOMPLETE_PARAMETERS) << "-out requires a valid output filename!";
             }
 
@@ -115,40 +114,35 @@ void Params::inputParams(int argc, char *argv[])
             i++;
         }
 
-        else if(paramPrefix== "-oFormat")
-        {
-            if(i+1 > argc)
-            {
+        else if (paramPrefix == "-oFormat") {
+            if (i + 1 > argc) {
                 fatalstream(EXIT_INCOMPLETE_PARAMETERS) << "-oFormat requires a valid output format";
             }
 
-            if(subParam  == "srt")
+            if (subParam == "srt")
                 outputFormat = srt;
 
-            else if(subParam  == "xml")
+            else if (subParam == "xml")
                 outputFormat = xml;
 
-            else if(subParam  == "json")
+            else if (subParam == "json")
                 outputFormat = json;
 
-            else if(subParam  == "karaoke")
+            else if (subParam == "karaoke")
                 outputFormat = karaoke;
 
-            else if(subParam  == "stdout")
+            else if (subParam == "stdout")
                 outputFormat = console;
 
-            else
-            {
+            else {
                 fatalstream(EXIT_INVALID_PARAMETERS) << "-oFormat requires a valid output format!";
             }
 
             i++;
         }
 
-        else if(paramPrefix == "-model")
-        {
-            if(i+1 > argc)
-            {
+        else if (paramPrefix == "-model") {
+            if (i + 1 > argc) {
                 fatalstream(EXIT_INCOMPLETE_PARAMETERS) << "-model requires a path to valid acoustic model!";
             }
 
@@ -156,10 +150,8 @@ void Params::inputParams(int argc, char *argv[])
             i++;
         }
 
-        else if(paramPrefix== "-lm")
-        {
-            if(i+1 > argc)
-            {
+        else if (paramPrefix == "-lm") {
+            if (i + 1 > argc) {
                 fatalstream(EXIT_INCOMPLETE_PARAMETERS) << "-lm requires a path to language model!";
             }
 
@@ -168,10 +160,8 @@ void Params::inputParams(int argc, char *argv[])
         }
 
 
-        else if(paramPrefix== "-dict")
-        {
-            if(i+1 > argc)
-            {
+        else if (paramPrefix == "-dict") {
+            if (i + 1 > argc) {
                 fatalstream(EXIT_INCOMPLETE_PARAMETERS) << "-dict requires a path to a valid dictionary file!";
             }
 
@@ -180,10 +170,8 @@ void Params::inputParams(int argc, char *argv[])
         }
 
 
-        else if(paramPrefix== "-fsg")
-        {
-            if(i+1 > argc)
-            {
+        else if (paramPrefix == "-fsg") {
+            if (i + 1 > argc) {
                 fatalstream(EXIT_INCOMPLETE_PARAMETERS) << "-fsg requires a path to a valid directory containing FSG files!";
             }
 
@@ -192,10 +180,8 @@ void Params::inputParams(int argc, char *argv[])
         }
 
 
-        else if(paramPrefix== "-log")
-        {
-            if(i+1 > argc)
-            {
+        else if (paramPrefix == "-log") {
+            if (i + 1 > argc) {
                 fatalstream(EXIT_INCOMPLETE_PARAMETERS) << "-log requires a path to a valid output log file!";
             }
 
@@ -203,10 +189,8 @@ void Params::inputParams(int argc, char *argv[])
             i++;
         }
 
-        else if(paramPrefix == "-phoneLM")
-        {
-            if(i+1 > argc)
-            {
+        else if (paramPrefix == "-phoneLM") {
+            if (i + 1 > argc) {
                 fatalstream(EXIT_INCOMPLETE_PARAMETERS) << "-phoneLM requires a path to a valid phonetic language model!";
 
             }
@@ -225,10 +209,8 @@ void Params::inputParams(int argc, char *argv[])
             i++;
         }
 
-        else if(paramPrefix == "-phoneLog")
-        {
-            if(i+1 > argc)
-            {
+        else if (paramPrefix == "-phoneLog") {
+            if (i + 1 > argc) {
                 fatalstream(EXIT_INCOMPLETE_PARAMETERS) << "-phoneLog requires a path to a valid output log file!";
 
             }
@@ -237,134 +219,118 @@ void Params::inputParams(int argc, char *argv[])
             i++;
         }
 
-        else if(paramPrefix == "--enable-phonemes")
-        {
-            if(i+1 > argc)
-            {
+        else if (paramPrefix == "--enable-phonemes") {
+            if (i + 1 > argc) {
                 fatalstream(EXIT_INCOMPLETE_PARAMETERS) << "--enable-phonemes requires a valid response!";
 
             }
 
-            if(subParam == "yes")
+            if (subParam == "yes")
                 searchPhonemes = true;
 
             i++;
         }
 
-        else if(paramPrefix== "--generate-grammar")
-        {
-            if(i+1 > argc)
-            {
+        else if (paramPrefix == "--generate-grammar") {
+            if (i + 1 > argc) {
                 fatalstream(EXIT_INCOMPLETE_PARAMETERS) << "--generate-grammar requires a valid response!";
 
             }
 
-            if(subParam  == "yes")
+            if (subParam == "yes")
                 grammarType = complete_grammar;
 
-            else if(subParam  == "no")
+            else if (subParam == "no")
                 grammarType = no_grammar;
 
-            else if(subParam  == "onlyCorpus")
+            else if (subParam == "onlyCorpus")
                 grammarType = corpus;
 
-            else if(subParam  == "onlyDict")
+            else if (subParam == "onlyDict")
                 grammarType = dict;
 
-            else if(subParam  == "onlyFSG")
+            else if (subParam == "onlyFSG")
                 grammarType = fsg;
 
-            else if(subParam  == "onlyLM")
+            else if (subParam == "onlyLM")
                 grammarType = lm;
 
-            else if(subParam  == "onlyVocab")
+            else if (subParam == "onlyVocab")
                 grammarType = vocab;
 
-            else
-            {
+            else {
                 fatalstream(EXIT_INVALID_PARAMETERS) << "--generate-grammar requires a valid response!";
             }
 
             i++;
         }
 
-        else if(paramPrefix == "--quick-dict")
-        {
-            if(i+1 > argc)
-            {
+        else if (paramPrefix == "--quick-dict") {
+            if (i + 1 > argc) {
                 fatalstream(EXIT_INCOMPLETE_PARAMETERS) << "--quick-dict requires a valid response!";
             }
 
-            if(subParam == "yes")
+            if (subParam == "yes")
                 quickDict = true;
 
             i++;
         }
 
-        else if(paramPrefix == "--quick-lm")
-        {
-            if(i+1 > argc)
-            {
+        else if (paramPrefix == "--quick-lm") {
+            if (i + 1 > argc) {
                 fatalstream(EXIT_INCOMPLETE_PARAMETERS) << "--quick-lm requires a valid response!";
             }
 
-            if(subParam == "yes")
+            if (subParam == "yes")
                 quickLM = true;
 
             i++;
         }
 
-        else if(paramPrefix== "--print-aligned")
-        {
-            if(i+1 > argc)
-            {
+        else if (paramPrefix == "--print-aligned") {
+            if (i + 1 > argc) {
                 fatalstream(EXIT_INCOMPLETE_PARAMETERS) << "--print-aligned requires a valid response!";
             }
 
-            if(subParam  == "yes")
+            if (subParam == "yes")
                 printOption = printOnlyRecognised;
 
-            else if(subParam  == "no")
-                printOption = printBothWihoutColors ;
+            else if (subParam == "no")
+                printOption = printBothWihoutColors;
 
-            else if(subParam  == "withColors")
+            else if (subParam == "withColors")
                 printOption = printBothWithDistinctColors;
 
-            else if(subParam  == "karaoke")
+            else if (subParam == "karaoke")
                 printOption = printAsKaraoke;
 
-            else if(subParam  == "karaokeWithColors")
+            else if (subParam == "karaokeWithColors")
                 printOption = printAsKaraoke;
 
-            else
-            {
+            else {
                 fatalstream(EXIT_INVALID_PARAMETERS) << "--print-aligned requires a valid response!";
             }
 
             i++;
         }
 
-        else if(paramPrefix== "--use-fsg")
-        {
-            if(i+1 > argc)
-            {
+        else if (paramPrefix == "--use-fsg") {
+            if (i + 1 > argc) {
                 fatalstream(EXIT_INCOMPLETE_PARAMETERS) << "--use-fsg requires a valid response!";
             }
 
-            if(subParam  == "yes")
+            if (subParam == "yes")
                 useFSG = true;
 
             i++;
         }
 
-        else if(paramPrefix== "-transcribe")
-        {
-            if(i+1 > argc)
-            {
+        else if (paramPrefix == "-transcribe") {
+            if (i + 1 > argc) {
                 fatalstream(EXIT_INCOMPLETE_PARAMETERS) << "-transcribe requires a valid response!";
             }
 
-            if(subParam  == "yes")
+            if (subParam == "yes")
                 transcribe = true;
 
             i++;
@@ -392,112 +358,94 @@ void Params::inputParams(int argc, char *argv[])
             i++;
         }
 
-        else if(paramPrefix== "--display-recognised")
-        {
-            if(i+1 > argc)
-            {
+        else if (paramPrefix == "--display-recognised") {
+            if (i + 1 > argc) {
                 fatalstream(EXIT_INCOMPLETE_PARAMETERS) << "--display-recognised requires a valid response!";
             }
 
-            if(subParam  == "no")
+            if (subParam == "no")
                 displayRecognised = false;
 
             i++;
         }
 
-        else if(paramPrefix== "-searchWindow")
-        {
-            if(i+1 > argc)
-            {
+        else if (paramPrefix == "-searchWindow") {
+            if (i + 1 > argc) {
                 fatalstream(EXIT_INCOMPLETE_PARAMETERS) << "-searchWindow requires an integer value to determine the search scope!";
             }
 
-            searchWindow = std::strtoul( subParam.c_str(), nullptr, 10 );
+            searchWindow = std::strtoul(subParam.c_str(), nullptr, 10);
 
-            if ( errno )
-            {
+            if (errno) {
                 fatalstream(EXIT_FAILURE) << "Invalid value passed to -searchWindow : " << strerror(errno);
             }
 
             i++;
         }
 
-        else if(paramPrefix== "-sampleWindow")
-        {
-            if(i+1 > argc)
-            {
+        else if (paramPrefix == "-sampleWindow") {
+            if (i + 1 > argc) {
                 fatalstream(EXIT_INCOMPLETE_PARAMETERS) << "-sampleWindow requires a valid integer value to determine the recognition scope!";
             }
 
-            sampleWindow = std::strtoul( subParam.c_str(), nullptr, 10 );
+            sampleWindow = std::strtoul(subParam.c_str(), nullptr, 10);
 
-            if ( errno )
-            {
+            if (errno) {
                 fatalstream(EXIT_FAILURE) << "Invalid value passed to -sampleWindow : " << strerror(errno);
             }
 
             i++;
         }
 
-        else if(paramPrefix== "-audioWindow")
-        {
-            if(i+1 > argc)
-            {
+        else if (paramPrefix == "-audioWindow") {
+            if (i + 1 > argc) {
                 fatalstream(EXIT_INCOMPLETE_PARAMETERS) << "-audioWindow requires a valid integer value in milliseconds to determine the recognition scope!";
             }
 
-            audioWindow = std::strtoul( subParam.c_str(), nullptr, 10 );
+            audioWindow = std::strtoul(subParam.c_str(), nullptr, 10);
 
-            if ( errno )
-            {
+            if (errno) {
                 fatalstream(EXIT_FAILURE) << "Invalid value passed to -audioWindow : " << strerror(errno);
             }
 
             i++;
         }
 
-        else if(paramPrefix== "-useBatchMode")
-        {
-            if(i+1 > argc)
-            {
+        else if (paramPrefix == "-useBatchMode") {
+            if (i + 1 > argc) {
                 fatalstream(EXIT_INCOMPLETE_PARAMETERS) << "-useBatchMode requires a valid response!";
             }
 
-            if(subParam  == "yes")
+            if (subParam == "yes")
                 useBatchMode = true;
 
             i++;
         }
 
-        else if(paramPrefix== "-experiment")
-        {
-            if(i+1 > argc)
-            {
+        else if (paramPrefix == "-experiment") {
+            if (i + 1 > argc) {
                 fatalstream(EXIT_INCOMPLETE_PARAMETERS) << "-experiment requires a valid response!";
             }
 
-            if(subParam  == "yes")
+            if (subParam == "yes")
                 useExperimentalParams = true;
 
             i++;
         }
 
-        else if(paramPrefix== "-approx")
-        {
-            if(i+1 > argc)
-            {
+        else if (paramPrefix == "-approx") {
+            if (i + 1 > argc) {
                 fatalstream(EXIT_INCOMPLETE_PARAMETERS) << "-approx requires a valid response!";
             }
 
-            if(subParam  == "yes")
+            if (subParam == "yes")
                 chosenAlignerType = approxAligner;
 
             i++;
         }
 
-        else
-        {
-            fatalstream(EXIT_INVALID_PARAMETERS) << "Parameter '"<< paramPrefix <<"' is not recognised!";
+        else {
+            fatalstream(EXIT_INVALID_PARAMETERS) << "Parameter '" << paramPrefix << "' is not recognised!";
         }
 
     }
@@ -506,111 +454,109 @@ void Params::inputParams(int argc, char *argv[])
 
 }
 
-void Params::validateParams()
-{
-    if(audioFileName.empty() && !readStream)
+void Params::validateParams() {
+    if (audioFileName.empty() && !readStream)
         fatalstream(EXIT_INVALID_PARAMETERS) << "Audio file name is empty!";
 
-    if(subtitleFileName.empty())
+    if (subtitleFileName.empty() && !usingTranscript)
         fatalstream(EXIT_INVALID_PARAMETERS) << "Subtitle file name is empty!";
 
-    if(modelPath.empty())
+    if (transcriptFileName.empty() && usingTranscript)
+        fatalstream(EXIT_INVALID_FILE) << "Transcript file name is empty!";
+
+    if (usingTranscript && chosenAlignerType == approxAligner)
+        fatalstream(EXIT_INVALID_PARAMETERS) << "Approx alligner doesn't work with text files");
+
+    if (modelPath.empty())
         debugstream << "Using default Model Path.";
 
-    if(dictPath.empty())
+    if (dictPath.empty())
         debugstream << "Using default Dictionary Path.";
 
-    if(lmPath.empty())
+    if (lmPath.empty())
         debugstream << "Using default LM Path.";
 
-    if(logPath.empty())
+    if (logPath.empty())
         debugstream << "Using default Log Path.";
 
-    if(fsgPath.empty())
+    if (fsgPath.empty())
         debugstream << "Using default FSG Path.";
 
-    if(phoneticlmPath.empty())
+    if (phoneticlmPath.empty())
         debugstream << "Using default Phonetic LM Path.";
 
-    if(phonemeLogPath.empty())
+    if (phonemeLogPath.empty())
         debugstream << "Using default Phoneme Log Path.";
 
     if (alignerLogPath.empty())
-        debugstream << "Using default Phoneme Log Path.";
+        debugstream << "Using default Aligner Log Path.";
 
-    if(readStream)
-    {
+    if (readStream) {
         audioFileName = "stdin";
     }
 
-    if(outputFileName.empty())
-    {
+    if (outputFileName.empty()) {
         outputFileName = extractFileName(audioFileName);
 
         switch (outputFormat)  //decide on basis of set output format
         {
-            case srt:       outputFileName += ".srt";
-                break;
+        case srt:       outputFileName += ".srt";
+            break;
 
-            case xml:       outputFileName += ".xml";
-                break;
+        case xml:       outputFileName += ".xml";
+            break;
 
-            case json:      outputFileName += ".json";
-                break;
+        case json:      outputFileName += ".json";
+            break;
 
-            case karaoke:   outputFileName += ".srt";
-                break;
+        case karaoke:   outputFileName += ".srt";
+            break;
 
-            default:        fatalstream(EXIT_UNKNOWN) << "An error occurred while choosing output format!";
-                exit(2);
+        default:        fatalstream(EXIT_UNKNOWN) << "An error occurred while choosing output format!";
+            exit(2);
         }
     }
 
-    if(grammarType == complete_grammar && quickDict)
+    if (grammarType == complete_grammar && quickDict)
         grammarType = quick_dict;
 
-    if(grammarType == complete_grammar && quickLM)
+    if (grammarType == complete_grammar && quickLM)
         grammarType = quick_lm;
 
-    if(useFSG && transcribe)
-    {
-        fatalstream(EXIT_INCOMPATIBLE_PARAMETERS ) << "FSG and Transcribing are not compatible!";
+    if (useFSG && transcribe) {
+        fatalstream(EXIT_INCOMPATIBLE_PARAMETERS) << "FSG and Transcribing are not compatible!";
     }
 
-    if(searchPhonemes && transcribe)
-    {
-        fatalstream(EXIT_INCOMPATIBLE_PARAMETERS ) << "Sorry, currently phoneme transcribing is not supported!";
+    if (searchPhonemes && transcribe) {
+        fatalstream(EXIT_INCOMPATIBLE_PARAMETERS) << "Sorry, currently phoneme transcribing is not supported!";
     }
 
     printParams();
 }
 
-void Params::printParams() const noexcept
-{
+void Params::printParams() const noexcept {
     verbosestream << "audioFileName       : " << audioFileName;
-    verbosestream << "subtitleFileName    : " << subtitleFileName;
+    if (!usingTranscript)
+        verbosestream << "subtitleFileName    : " << subtitleFileName;
+    else
+        verbosestream << "transcriptFileName	: " << transcriptFileName;
     verbosestream << "outputFileName      : " << outputFileName;
     verbosestream << "modelPath           : " << modelPath;
     verbosestream << "lmPath              : " << lmPath;
     verbosestream << "dictPath            : " << dictPath;
     verbosestream << "fsgPath             : " << fsgPath;
-
     verbosestream << "phoneticlmPath      : " << phoneticlmPath;
-
     verbosestream << "logPath             : " << logPath;
-    verbosestream << "alignerLogPath      : " << alignerLogPath;
     verbosestream << "phonemeLogPath      : " << phonemeLogPath;
-
+    verbosestream << "alignerLogPath      : " << alignerLogPath;
     verbosestream << "sampleWindow        : " << sampleWindow;
     verbosestream << "audioWindow         : " << audioWindow;
     verbosestream << "searchWindow        : " << searchWindow;
-
-
     verbosestream << "chosenAlignerType   : " << chosenAlignerType;
     verbosestream << "grammarType         : " << grammarType;
     verbosestream << "outputFormat        : " << outputFormat;
     verbosestream << "printOption         : " << printOption;
-
+    verbosestream << "verbosity           : " << verbosity;
     verbosestream << "useFSG              : " << useFSG;
     verbosestream << "transcribe          : " << transcribe;
     verbosestream << "useBatchMode        : " << useBatchMode;
@@ -620,7 +566,5 @@ void Params::printParams() const noexcept
     verbosestream << "readStream          : " << readStream;
     verbosestream << "quickDict           : " << quickDict;
     verbosestream << "quickLM             : " << quickLM;
-
-    verbosestream << "\n\n=====================================================\n\n";
-
+    verbosestream << "\n\n=====================================================\n";
 }
