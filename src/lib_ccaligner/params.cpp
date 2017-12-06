@@ -465,7 +465,7 @@ void Params::validateParams() {
         fatalstream(EXIT_INVALID_FILE) << "Transcript file name is empty!";
 
     if (usingTranscript && chosenAlignerType == approxAligner)
-        fatalstream(EXIT_INVALID_PARAMETERS) << "Approx alligner doesn't work with text files");
+        fatalstream(EXIT_INVALID_PARAMETERS) << "Approx alligner doesn't work with text files";
 
     if (modelPath.empty())
         debugstream << "Using default Model Path.";
