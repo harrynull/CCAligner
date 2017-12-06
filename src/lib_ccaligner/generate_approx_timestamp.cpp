@@ -74,7 +74,6 @@ inline int CurrentSub::getDuration (long startTime, long endTime) const noexcept
     if(endTime < startTime)
     {
         fatalstream(EXIT_INVALID_FILE) << "Error! Incorrect start time and end time of the dialogue.";
-        return -1;
     }
 
     return endTime - startTime;

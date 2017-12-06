@@ -40,10 +40,18 @@ void printFooter()
     std::cout<<"https://github.com/saurabhshri/CCAligner/issues\n";
 }
 
-CCAligner::CCAligner(Params* parameters)
+CCAligner::CCAligner(Params* parameters) : logFile(parameters->logPath)
 {
     _parameters = parameters;
-    //should_log = _parameters->verbosity;
+  
+    Logger::Sink sink(logFile, false);
+    sink.setMinimumOutputLevel(Logger::Level::verbose);
+    getLogger().addSink(sink);
+
+}
+
+CCAligner::~CCAligner() {
+    logFile.close();
 }
 
 int CCAligner::initAligner()

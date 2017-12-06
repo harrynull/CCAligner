@@ -73,7 +73,7 @@ bool generate(std::vector <SubtitleItem*> subtitles, grammarName name)
 
     if(name == corpus || name == complete_grammar)
     {
-		debugstream << "Creating Corpus : tempFiles/corpus/corpus.txt";
+		infostream << "Creating Corpus : tempFiles/corpus/corpus.txt";
 
         try
         {
@@ -90,7 +90,7 @@ bool generate(std::vector <SubtitleItem*> subtitles, grammarName name)
 
     if(name == phone_lm || name == complete_grammar)
     {
-        debugstream << "Creating Phonetic Corpus : tempFiles/corpus/phoneticCorpus.txt";
+        infostream << "Creating Phonetic Corpus : tempFiles/corpus/phoneticCorpus.txt";
 
         try
         {
@@ -256,7 +256,7 @@ bool generate(std::vector <SubtitleItem*> subtitles, grammarName name)
 
         else
         {
-			debugstream << "Creating the Dictionary, this might take a little time depending "
+			infostream << "Creating the Dictionary, this might take a little time depending "
                 "on your TensorFlow configuration : tempFiles/dict/complete.dict";
 
             rv = systemGetStatus("g2p-seq2seq --decode tempFiles/vocab/complete.vocab --model g2p-seq2seq-cmudict/ > tempFiles/dict/complete.dict");
@@ -273,7 +273,7 @@ bool generate(std::vector <SubtitleItem*> subtitles, grammarName name)
 
     if(name == lm || name == complete_grammar )
     {
-        debugstream << "Creating Biased Language Model : tempFiles/lm/complete.lm";
+        infostream << "Creating Biased Language Model : tempFiles/lm/complete.lm";
 
         if(generateQuickLM)
         {
@@ -316,7 +316,7 @@ bool generate(std::vector <SubtitleItem*> subtitles, grammarName name)
 
     if(name == phone_lm  || name == complete_grammar )
     {
-        debugstream << "Creating Phonetic Language Model : tempFiles/lm/phone.lm";
+        infostream << "Creating Phonetic Language Model : tempFiles/lm/phone.lm";
 
         rv = systemGetStatus("perl quick_lm.pl -s tempFiles/corpus/phoneticCorpus.txt 2>tempFiles/grammar.log");
         if (rv != 0)

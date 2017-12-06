@@ -34,7 +34,7 @@ PocketsphinxAligner::PocketsphinxAligner(Params* parameters) noexcept
     debugstream << "Initialising Aligner using PocketSphinx";
     debugstream << "Audio Filename: " << _audioFileName << " Subtitle filename: " << _subtitleFileName;
         
-    debugstream << "Reading and decoding audio samples...";
+    infostream << "Reading and decoding audio samples...";
 
     if (parameters->readStream)
         _file = decltype(_file)(new WaveFileData(readStreamDirectly, parameters->audioIsRaw));
@@ -49,12 +49,12 @@ bool PocketsphinxAligner::generateGrammar(grammarName name)
 {
     debugstream << "Generating Grammar based on subtitles, Grammar Name: " << name;
 
-	debugstream << "Generating language model and grammar files...";
+	infostream << "Generating language model and grammar files...";
 
     if(_parameters->grammarType == complete_grammar || _parameters->grammarType == dict)
     {
-		debugstream << "Note: You have chosen to generate a dictionary. Based on your TensorFlow configuration,";
-		debugstream << "this may take some time, please be patient. For alternatives, see docs.";
+        infostream << "Note: You have chosen to generate a dictionary. Based on your TensorFlow configuration,";
+        infostream << "this may take some time, please be patient. For alternatives, see docs.";
     }
 
     return generate(_subtitles, name);
@@ -425,7 +425,7 @@ bool PocketsphinxAligner::recognise()
         recognitionWindow = _sampleWindow;
     }
 
-    debugstream << "Recognising and aligning..";
+    infostream << "Recognising and aligning..";
 
     for (SubtitleItem *sub : _subtitles)
     {
@@ -523,13 +523,13 @@ bool PocketsphinxAligner::recognise()
             case karaoke:   subCount = printKaraokeContinuous(_outputFileName, subCount, sub, _parameters->printOption);
                 break;
 
-            default:        fatalstream(EXIT_UNKNOWN)<<"An error occurred while choosing output format!";
+            default:    fatalstream(EXIT_INVALID_PARAMETERS)<<"An error occurred while choosing output format!";
         }
     }
 
     printFileEnd(_outputFileName, _parameters->outputFormat);
 
-    debugstream << "Finished recognition and alignment..";
+    infostream << "Finished recognition and alignment..";
 
     return true;
 }
@@ -539,7 +539,7 @@ bool PocketsphinxAligner::align()
     if(_parameters->grammarType != no_grammar)
         generateGrammar(_parameters->grammarType);
 
-    initDecoder(_parameters->modelPath, _parameters->lmPath, _parameters->dictPath, _parameters->fsgPath, _parameters->logPath);
+    initDecoder(_parameters->modelPath, _parameters->lmPath, _parameters->dictPath, _parameters->fsgPath, _parameters->alignerLogPath);
 
     if(_parameters->transcribe)
     {
@@ -623,7 +623,7 @@ int PocketsphinxAligner::findTranscribedWordTimings(cmd_ln_t *config, ps_decoder
 
 bool PocketsphinxAligner::transcribe()
 {
-    debugstream << "Transcribing...";
+    infostream << "Transcribing...";
 
     //pointer to samples
     const int16_t *sample = _samples.data();
@@ -691,7 +691,7 @@ bool PocketsphinxAligner::transcribe()
 
     printTranscriptionFooter(_outputFileName, _parameters->outputFormat);
 
-    debugstream << "Finished transcription.";
+    infostream << "Finished transcription.";
 
     return true;
 }

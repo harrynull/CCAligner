@@ -29,11 +29,14 @@ namespace Colors {
 #ifdef WIN32
 #define NOMINMAX
 #include <Windows.h>
-#define WINDOWS_COLOR(colorName, colorCode)\
-    inline std::ostream& colorName(std::ostream& s)\
-    {SetConsoleTextAttribute(hStdout, colorCode);return s;}
 
-    static HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
+    inline void setConsoleColor(short colorCode) {
+        static HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
+        SetConsoleTextAttribute(hStdout, colorCode);
+    }
+
+#define WINDOWS_COLOR(colorName, colorCode)\
+    inline std::ostream& colorName(std::ostream& s){setConsoleColor(colorCode);return s;}
 
     WINDOWS_COLOR(red,      FOREGROUND_RED);
     WINDOWS_COLOR(yellow,   FOREGROUND_RED | FOREGROUND_GREEN);
@@ -41,9 +44,12 @@ namespace Colors {
     WINDOWS_COLOR(white,    FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
     WINDOWS_COLOR(lyellow,  FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
     WINDOWS_COLOR(lwhite,   FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+    WINDOWS_COLOR(cdefault, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+
 #undef WINDOWS_COLOR
 
 #else
+    inline void setDefaultColor() {}
 #define LINUX_COLOR(colorName, colorCode) inline std::ostream& colorName(std::ostream &s) {return s << colorCode;}
 
     LINUX_COLOR(red,        "\033[21;31m");
@@ -52,7 +58,8 @@ namespace Colors {
     LINUX_COLOR(white,      "\033[21;37m");
     LINUX_COLOR(lyellow,    "\033[1;33m");
     LINUX_COLOR(lwhite,     "\033[1;37m");
-
+    LINUX_COLOR(cdefault,   "\033[0;00m");
+    
 #undef LINUX_COLOR
 #endif
 }
@@ -71,13 +78,14 @@ public:
     class Sink {
     public:
         Sink(std::ostream& os, bool useColor) :_os(os), _useColor(useColor) {}
-        
+
         // Write stringstream to ostream if the level is higher than the minimum output level.
-        void output(std::stringstream& ss, Level level) const {
+        void output(const std::stringstream& ss, Level level) {
             if (level < _minimumOutputLevel) return;
             if (_useColor) _os << *colors[level];
-            _os << ss.rdbuf();
-            if (level == error || level == fatal) ss.flush(); // flush immediately to prevent data loss.
+            _os << ss.str();
+            if (_useColor) _os << Colors::cdefault; // change back to the deafult color
+            if (level == error || level == fatal || true) flush(); // flush immediately to prevent data loss.
         }
 
         // Set thte minimum output level.
@@ -85,17 +93,22 @@ public:
             _minimumOutputLevel = level;
         }
 
+        void flush() {
+            _os.flush();
+        }
+
     private:
         std::ostream& _os;
-        Level _minimumOutputLevel = Level::verbose;
+        Level _minimumOutputLevel = Level::debug;
         bool _useColor;
     };
 
     class Log {
     public:
-        Log(const Logger& logger, const char* fileName, const char* funcName, int lineNumber, Level level, const char* levelName, int exitCode = DO_NOT_EXIT)
+        Log(Logger& logger, const char* fileName, const char* funcName, int lineNumber, Level level, const char* levelName, int exitCode = DO_NOT_EXIT)
             :_logger(logger), _level(level), _exitCode(exitCode) {
-            _ss << "[" << getCurrentTime() << "]" << levelName << fileName << " : " << funcName << " | ";
+            _ss << "[" << getCurrentTime() << "]" << levelName << " ";
+            if (level == error || level == fatal) _ss << fileName << " (" << lineNumber << ") : " << funcName << " | ";
         }
         
         ~Log() {
@@ -112,31 +125,40 @@ public:
 
     private:
         static std::string getCurrentTime() {
-            std::string currentTime(15, '\0');
+            char currentTime[16];
             const auto now = std::time(nullptr);
-            std::strftime(&currentTime.front(), currentTime.size(), "%m-%d %H:%M:%S", std::localtime(&now));
-            return currentTime;
+            std::strftime(currentTime, 16, "%m-%d %H:%M:%S", std::localtime(&now));
+            return std::string(currentTime);
         }
 
-        const Logger& _logger;
+        Logger& _logger;
         std::stringstream _ss;
         Level _level;
         int _exitCode;
     };
 
     // It will apply the level to all **existing** sinks. Set level to nolog if you don't want any log.
+    // default: debug
     void setMinimumOutputLevel(Level level) noexcept {
         for (auto& sink : _sinks) sink.setMinimumOutputLevel(level);
     }
 
-    void log(std::stringstream& ss, Level level) const {
+    void log(std::stringstream& ss, Level level) {
         for (auto& sink : _sinks) sink.output(ss, level);
+    }
+
+    void addSink(Sink sink) {
+        _sinks.emplace_back(sink);
+    }
+
+    void flush() {
+        for (auto& sink : _sinks) sink.flush();
     }
 
     friend Logger& getLogger();
 
 private:
-    Logger() : _sinks{ {std::cout, true} } {}
+    Logger() : _sinks{ {std::cout, true} } { }
     std::vector<Sink> _sinks;
 };
 

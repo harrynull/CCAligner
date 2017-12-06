@@ -228,8 +228,7 @@ bool WaveFileData::openFile ()
 
     if (!infile)
     {
-        debugstream << "Error occured while opening file";
-        fatalstream(EXIT_FILE_NOT_FOUND, "Unable to open file : " << _fileName);
+        fatalstream(EXIT_FILE_NOT_FOUND) << "Unable to open file : " << _fileName;
     }
 
     debugstream << "Reading file data";

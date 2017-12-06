@@ -6,7 +6,7 @@
 #include "logger.h"
 
 std::array<const char*, 6> Logger::levelTags{
-    "[verbose]", "[debug]", "[info]", "[warning]", "[error]", "[fatal]"
+    "[Verbose]", "[Debug]", "[Info]", "[Warning]", "[Error]", "[Fatal]"
 };
 
 std::array<Colors::ColorFunc*, 6> Logger::colors{

@@ -33,8 +33,6 @@ Params::Params() noexcept
       grammarType(complete_grammar),
       outputFormat(xml),
       printOption(printBothWithDistinctColors),
-
-      verbosity(true),
       useFSG(),
       transcribe(),
       useBatchMode(),
@@ -51,6 +49,7 @@ Params::Params() noexcept
     localTime.erase(std::strftime(&localTime.front(), localTime.size(), "%d-%m-%Y-%H-%M-%S", std::localtime(&now)));
 
     logPath = "tempFiles/" + localTime + ".log";
+    alignerLogPath = "tempFiles/aligner-" + localTime + ".log";
     phonemeLogPath = "tempFiles/phoneme-" + localTime + ".log";
 }
 
@@ -216,6 +215,16 @@ void Params::inputParams(int argc, char *argv[])
             i++;
         }
 
+        else if (paramPrefix == "-alignerLog") {
+            if (i + 1 > argc) {
+                fatalstream(EXIT_INCOMPLETE_PARAMETERS) << "-alignerLog requires a path to a valid output log file!";
+
+            }
+
+            alignerLogPath = subParam;
+            i++;
+        }
+
         else if(paramPrefix == "-phoneLog")
         {
             if(i+1 > argc)
@@ -362,15 +371,23 @@ void Params::inputParams(int argc, char *argv[])
         }
 
 
-        else if(paramPrefix== "-verbose")
-        {
-            if(i+1 > argc)
-            {
+        else if (paramPrefix == "-verbosity") {
+            if (i + 1 > argc) {
                 fatalstream(EXIT_INCOMPLETE_PARAMETERS) << "-verbose requires a valid response!";
             }
 
-            if(subParam  == "no")
-                verbosity = false;
+            if (subParam == "verbose")
+                getLogger().setMinimumOutputLevel(Logger::Level::verbose);
+            else if (subParam == "debug")
+                getLogger().setMinimumOutputLevel(Logger::Level::debug);
+            else if (subParam == "info")
+                getLogger().setMinimumOutputLevel(Logger::Level::info);
+            else if (subParam == "warning")
+                getLogger().setMinimumOutputLevel(Logger::Level::warning);
+            else if (subParam == "error")
+                getLogger().setMinimumOutputLevel(Logger::Level::error);
+            else if (subParam == "nolog")
+                getLogger().setMinimumOutputLevel(Logger::Level::nolog);
 
             i++;
         }
@@ -518,6 +535,9 @@ void Params::validateParams()
     if(phonemeLogPath.empty())
         debugstream << "Using default Phoneme Log Path.";
 
+    if (alignerLogPath.empty())
+        debugstream << "Using default Phoneme Log Path.";
+
     if(readStream)
     {
         audioFileName = "stdin";
@@ -562,49 +582,45 @@ void Params::validateParams()
         fatalstream(EXIT_INCOMPATIBLE_PARAMETERS ) << "Sorry, currently phoneme transcribing is not supported!";
     }
 
-    if(verbosity)
-    {
-        //should_log = true;
-        printParams();
-    }
+    printParams();
 }
 
 void Params::printParams() const noexcept
 {
-    std::cout<<"audioFileName       : "<<audioFileName<<"\n";
-    std::cout<<"subtitleFileName    : "<<subtitleFileName<<"\n";
-    std::cout<<"outputFileName      : "<<outputFileName<<"\n";
-    std::cout<<"modelPath           : "<<modelPath<<"\n";
-    std::cout<<"lmPath              : "<<lmPath<<"\n";
-    std::cout<<"dictPath            : "<<dictPath<<"\n";
-    std::cout<<"fsgPath             : "<<fsgPath<<"\n";
+    verbosestream << "audioFileName       : " << audioFileName;
+    verbosestream << "subtitleFileName    : " << subtitleFileName;
+    verbosestream << "outputFileName      : " << outputFileName;
+    verbosestream << "modelPath           : " << modelPath;
+    verbosestream << "lmPath              : " << lmPath;
+    verbosestream << "dictPath            : " << dictPath;
+    verbosestream << "fsgPath             : " << fsgPath;
 
-    std::cout<<"phoneticlmPath      : "<<phoneticlmPath<<"\n";
+    verbosestream << "phoneticlmPath      : " << phoneticlmPath;
 
-    std::cout<<"logPath             : "<<logPath<<"\n";
-    std::cout<<"phonemeLogPath      : "<<phonemeLogPath<<"\n";
+    verbosestream << "logPath             : " << logPath;
+    verbosestream << "alignerLogPath      : " << alignerLogPath;
+    verbosestream << "phonemeLogPath      : " << phonemeLogPath;
 
-    std::cout<<"sampleWindow        : "<<sampleWindow<<"\n";
-    std::cout<<"audioWindow         : "<<audioWindow<<"\n";
-    std::cout<<"searchWindow        : "<<searchWindow<<"\n";
+    verbosestream << "sampleWindow        : " << sampleWindow;
+    verbosestream << "audioWindow         : " << audioWindow;
+    verbosestream << "searchWindow        : " << searchWindow;
 
 
-    std::cout<<"chosenAlignerType   : "<<chosenAlignerType<<"\n";
-    std::cout<<"grammarType         : "<<grammarType<<"\n";
-    std::cout<<"outputFormat        : "<<outputFormat<<"\n";
-    std::cout<<"printOption         : "<<printOption<<"\n";
+    verbosestream << "chosenAlignerType   : " << chosenAlignerType;
+    verbosestream << "grammarType         : " << grammarType;
+    verbosestream << "outputFormat        : " << outputFormat;
+    verbosestream << "printOption         : " << printOption;
 
-    std::cout<<"verbosity           : "<<verbosity<<"\n";
-    std::cout<<"useFSG              : "<<useFSG<<"\n";
-    std::cout<<"transcribe          : "<<transcribe<<"\n";
-    std::cout<<"useBatchMode        : "<<useBatchMode<<"\n";
-    std::cout<<"ExperimentalParams  : "<< useExperimentalParams<<"\n";
-    std::cout<<"searchPhonemes      : "<<searchPhonemes<<"\n";
-    std::cout<<"displayRecognised   : "<<displayRecognised<<"\n";
-    std::cout<<"readStream          : "<<readStream<<"\n";
-    std::cout<<"quickDict           : " <<quickDict<<"\n";
-    std::cout<<"quickLM             : " <<quickLM<<"\n";
+    verbosestream << "useFSG              : " << useFSG;
+    verbosestream << "transcribe          : " << transcribe;
+    verbosestream << "useBatchMode        : " << useBatchMode;
+    verbosestream << "ExperimentalParams  : " << useExperimentalParams;
+    verbosestream << "searchPhonemes      : " << searchPhonemes;
+    verbosestream << "displayRecognised   : " << displayRecognised;
+    verbosestream << "readStream          : " << readStream;
+    verbosestream << "quickDict           : " << quickDict;
+    verbosestream << "quickLM             : " << quickLM;
 
-    std::cout<<"\n\n=====================================================\n\n";
+    verbosestream << "\n\n=====================================================\n\n";
 
 }
