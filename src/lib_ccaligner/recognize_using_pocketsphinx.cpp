@@ -20,7 +20,7 @@ PocketsphinxAligner::PocketsphinxAligner(Params* parameters) noexcept
     _lmPath(parameters->lmPath),
     _fsgPath(parameters->fsgPath),
     _logPath(parameters->logPath),
-    _phoneticlmPath(parameters->phoneticlmPath),
+    _phoneticLmPath(parameters->phoneticlmPath),
     _phonemeLogPath(parameters->phonemeLogPath),
 
     _audioWindow(parameters->audioWindow),
@@ -149,27 +149,27 @@ bool PocketsphinxAligner::initDecoder(const std::string& modelPath, const std::s
     }
 
     if (_parameters->searchPhonemes) {
-        initPhonemeDecoder(_parameters->phoneticlmPath, _parameters->phonemeLogPath);
+        initPhonemeDecoder(_parameters->phoneticLmPath, _parameters->phonemeLogPath);
     }
 
     return true;
 }
 
 
-bool PocketsphinxAligner::initPhonemeDecoder(const std::string& phoneticlmPath, const std::string& phonemeLogPath) {
-    DEBUG << "Initialising PocketSphinx phoneme decoder";
-
-    _phoneticlmPath = phoneticlmPath;
+bool PocketsphinxAligner::initPhonemeDecoder(const std::string& phoneticLmPath, const std::string& phonemeLogPath) {
+    DEBUG << "Initialising PocketSphinx phoneme decoder..";
+  
+    _phoneticLmPath = phoneticLmPath;
     _phonemeLogPath = phonemeLogPath;
 
-    DEBUG << "Configuration : \n\tphoneticlmPath = " << _phoneticlmPath << "\n\tphonemeLogPath = " << _phonemeLogPath;
+    DEBUG << "Configuration : \n\tphoneticLmPath = " << _phoneticLmPath << "\n\tphonemeLogPath = " << _phonemeLogPath;
 
     _configPhoneme = cmd_ln_init(nullptr,
         ps_args(), TRUE,
         "-hmm", _modelPath.c_str(),
         "-lm", _lmPath.c_str(),
         "-logfn", _phonemeLogPath.c_str(),
-        "-allphone", _phoneticlmPath.c_str(),
+        "-allphone", _phoneticLmPath.c_str(),
         "-beam", "1e-20",
         "-pbeam", "1e-10",
         "-allphone_ci", "no",

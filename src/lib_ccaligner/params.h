@@ -13,10 +13,9 @@
 
 class Params {
     std::string localTime;
-
     void validateParams();
 public:
-    std::string audioFileName, subtitleFileName, transcriptFileName, outputFileName, modelPath, lmPath, dictPath, fsgPath, logPath, phoneticlmPath, phonemeLogPath, alignerLogPath;
+    std::string audioFileName, subtitleFileName, transcriptFileName, outputFileName, modelPath, lmPath, dictPath, fsgPath, logPath, phoneticLmPath, phonemeLogPath, alignerLogPath;
     bool audioIsRaw;
     unsigned long searchWindow, sampleWindow, audioWindow;
     alignerType chosenAlignerType;

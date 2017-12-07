@@ -17,12 +17,11 @@ namespace {
 
 Params::Params() noexcept
     : localTime(32, '\0'),
-
     modelPath(defaultModelPath),
     lmPath(defaultLmPath),
     dictPath(defaultDictPath),
     fsgPath(defaultFsgPath),
-    phoneticlmPath(defaultPhoneticLmPath),
+    phoneticLmPath(defaultPhoneticLmPath),
 
     searchWindow(3),
     audioWindow(0),
@@ -42,6 +41,7 @@ Params::Params() noexcept
     quickDict(),
     quickLM(),
     audioIsRaw() {
+      
     // Using date and time for log filename.
     const auto now = std::time(nullptr);
     localTime.erase(std::strftime(&localTime.front(), localTime.size(), "%d-%m-%Y-%H-%M-%S", std::localtime(&now)));
@@ -195,7 +195,7 @@ void Params::inputParams(int argc, char *argv[]) {
 
             }
 
-            phoneticlmPath = subParam;
+            phoneticLmPath = subParam;
             i++;
         }
 
@@ -296,8 +296,8 @@ void Params::inputParams(int argc, char *argv[]) {
                 printOption = printOnlyRecognised;
 
             else if (subParam == "no")
-                printOption = printBothWihoutColors;
-
+                printOption = printBothWithoutColors;
+          
             else if (subParam == "withColors")
                 printOption = printBothWithDistinctColors;
 
@@ -482,9 +482,9 @@ void Params::validateParams() {
     if (fsgPath.empty())
         DEBUG << "Using default FSG Path.";
 
-    if (phoneticlmPath.empty())
+    if (phoneticLmPath.empty())
         DEBUG << "Using default Phonetic LM Path.";
-
+  
     if (phonemeLogPath.empty())
         DEBUG << "Using default Phoneme Log Path.";
 
@@ -545,7 +545,7 @@ void Params::printParams() const noexcept {
     VERBOSE << "lmPath              : " << lmPath;
     VERBOSE << "dictPath            : " << dictPath;
     VERBOSE << "fsgPath             : " << fsgPath;
-    VERBOSE << "phoneticlmPath      : " << phoneticlmPath;
+    VERBOSE << "phoneticLmPath      : " << phoneticLmPath;
     VERBOSE << "logPath             : " << logPath;
     VERBOSE << "phonemeLogPath      : " << phonemeLogPath;
     VERBOSE << "alignerLogPath      : " << alignerLogPath;
