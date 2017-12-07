@@ -146,9 +146,9 @@ public:
 
     private:
         template<class E = ExceptionType>
-        typename std::enable_if<std::is_same_v<E, Dummy>>::type throwExceptionIfNeeded() {}
+        typename std::enable_if<std::is_same<E, Dummy>::value>::type throwExceptionIfNeeded() {}
         template<class E = ExceptionType>
-        typename std::enable_if<!std::is_same_v<E, Dummy>>::type throwExceptionIfNeeded() noexcept(false) {
+        typename std::enable_if<!std::is_same<E, Dummy>::value>::type throwExceptionIfNeeded() noexcept(false) {
             throw E(_ss.str());
         }
 
