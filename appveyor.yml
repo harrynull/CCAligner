@@ -13,12 +13,12 @@ build:
   verbosity: minimal
 on_success:
   - cd C:\ccaligner
-  - mkdir release
-  - copy build\Release\ccaligner.exe release\
-  - xcopy license release
-  - xcopy install\model release /s /e
-  - xcopy install\g2p-seq2seq-cmudict release /s /e
-  - copy install\quick_lm.pl release /s /e
+  - mkdir release > nul
+  - copy build\Release\ccaligner.exe release\ > nul
+  - xcopy license release > nul
+  - xcopy install\model release /s /e > nul
+  - xcopy install\g2p-seq2seq-cmudict release /s /e > nul
+  - copy install\quick_lm.pl release\ > nul
   # perl, dependencies
   - 7z a ccaligner.zip .\release > nul
   - if %PLATFORM% equ x64 rename ccaligner.zip ccaligner_x64.zip
