@@ -13,6 +13,7 @@
 #include <ctime>
 #include <array>
 #include <exception>
+#include <typeinfo>
 
 // Define possible exit codes that will be passed on to the fatal function exit codes.
 struct Dummy {};

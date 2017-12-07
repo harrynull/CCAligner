@@ -5,6 +5,7 @@
 */
 
 #include "ccaligner.h"
+#include <typeinfo>
 
 void printUsage()
 {
