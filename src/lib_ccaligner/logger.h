@@ -169,16 +169,16 @@ inline Logger& getLogger() {
 
 #define loggerstream(level) (Logger::Log(getLogger(), __FILE__, __FUNCTION__, __LINE__, Logger::Level::level, Logger::levelTags[Logger::Level::level]))
 // Information for tracing
-#define verbosestream loggerstream(verbose)
+#define VERBOSE loggerstream(verbose)
 // Information for developers
-#define debugstream loggerstream(debug)
+#define DEBUG loggerstream(debug)
 // Information for general users
-#define infostream loggerstream(info)
+#define INFO loggerstream(info)
 // Problems that may affect facility, performance or stability but may not lead the program to crash immediately
-#define warningstream loggerstream(warning)
+#define WARNING loggerstream(warning)
 // Something unexpected happened but can be recovered
-#define errorstream loggerstream(error)
+#define ERROR loggerstream(error)
 // Unrecoverable error and program termination is required
-#define fatalstream(code) (Logger::Log(getLogger(), __FILE__, __FUNCTION__, __LINE__, Logger::Level::fatal, Logger::levelTags[Logger::Level::fatal], code))
+#define FATAL(code) (Logger::Log(getLogger(), __FILE__, __FUNCTION__, __LINE__, Logger::Level::fatal, Logger::levelTags[Logger::Level::fatal], code))
 
 #endif

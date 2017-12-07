@@ -66,7 +66,7 @@ int CCAligner::initAligner()
     }
     else
     {
-        fatalstream(EXIT_INVALID_PARAMETERS) << "Unsupported Aligner Type!";
+        FATAL(EXIT_INVALID_PARAMETERS) << "Unsupported Aligner Type!";
     }
 
     return 1;
