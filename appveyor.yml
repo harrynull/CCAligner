@@ -1,7 +1,7 @@
 version: '{build}'
 platform:
   - Win32
-  - Win64
+  - x64
 configuration: Release
 clone_folder: C:\ccaligner
 clone_depth: 1
