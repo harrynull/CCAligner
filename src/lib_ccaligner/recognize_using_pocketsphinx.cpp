@@ -20,7 +20,7 @@ PocketsphinxAligner::PocketsphinxAligner(Params* parameters) noexcept
     _lmPath(parameters->lmPath),
     _fsgPath(parameters->fsgPath),
     _logPath(parameters->logPath),
-    _phoneticLmPath(parameters->phoneticlmPath),
+    _phoneticLmPath(parameters->phoneticLmPath),
     _phonemeLogPath(parameters->phonemeLogPath),
 
     _audioWindow(parameters->audioWindow),
@@ -139,13 +139,13 @@ bool PocketsphinxAligner::initDecoder(const std::string& modelPath, const std::s
 
 
     if (_configWord == nullptr) {
-        FATAL(EXIT_FAILURE) << "Failed to create config object, see log for details";
+        FATAL(UnknownError) << "Failed to create config object, see log for details";
     }
 
     _psWordDecoder = ps_init(_configWord);
 
     if (_psWordDecoder == nullptr) {
-        FATAL(EXIT_FAILURE) << "Failed to create recognizer, see log for details";
+        FATAL(UnknownError) << "Failed to create recognizer, see log for details";
     }
 
     if (_parameters->searchPhonemes) {
@@ -178,13 +178,13 @@ bool PocketsphinxAligner::initPhonemeDecoder(const std::string& phoneticLmPath, 
         nullptr);
 
     if (_configPhoneme == nullptr) {
-        FATAL(EXIT_FAILURE) << "Failed to create config object, see log for details";
+        FATAL(UnknownError) << "Failed to create config object, see log for details";
     }
 
     _psPhonemeDecoder = ps_init(_configPhoneme);
 
     if (_psPhonemeDecoder == nullptr) {
-        FATAL(EXIT_FAILURE) << "Failed to create phoneme recognizer, see log for details";
+        FATAL(UnknownError) << "Failed to create phoneme recognizer, see log for details";
     }
 
     return true;
@@ -300,7 +300,7 @@ recognisedBlock PocketsphinxAligner::findAndSetWordTimes(cmd_ln_t *config, ps_de
         endTime += ef * 1000 / frame_rate;
 
         if (startTime > endTime)
-            FATAL(EXIT_INVALID_PARAMETERS) << "Error setting start and end time.";
+            FATAL(InvalidParameters) << "Error setting start and end time.";
 
         //storing recognised words and their timing information
         currentBlock.recognisedString.push_back(recognisedWord);
@@ -501,7 +501,7 @@ bool PocketsphinxAligner::recognise() {
         case karaoke:   subCount = printKaraokeContinuous(_outputFileName, subCount, sub, _parameters->printOption);
             break;
 
-        default:    FATAL(EXIT_INVALID_PARAMETERS) << "An error occurred while choosing output format!";
+        default:    FATAL(InvalidParameters) << "An error occurred while choosing output format!";
         }
     }
 
@@ -776,7 +776,7 @@ bool PocketsphinxAligner::alignWithFSG() {
         case karaoke:   subCount = printKaraokeContinuous(_outputFileName, subCount, sub, _parameters->printOption);
             break;
 
-        default:        FATAL(EXIT_UNKNOWN) << "An error occurred while choosing output format!";
+        default:        FATAL(UnknownError) << "An error occurred while choosing output format!";
         }
 
 
@@ -803,7 +803,7 @@ bool PocketsphinxAligner::printAligned(const std::string& outputFileName, output
     case karaoke:   printKaraoke(outputFileName, _subtitles, _parameters->printOption);
         break;
 
-    default:        FATAL(EXIT_FAILURE) << "An error occurred while choosing output format!";
+    default:        FATAL(UnknownError) << "An error occurred while choosing output format!";
     }
 
     return true;

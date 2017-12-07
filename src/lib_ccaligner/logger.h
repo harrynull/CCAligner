@@ -12,24 +12,35 @@
 #include <vector>
 #include <ctime>
 #include <array>
+#include <exception>
 
 // Define possible exit codes that will be passed on to the fatal function exit codes.
-#define DO_NOT_EXIT                             -1
-#define EXIT_OK                                 0
-#define EXIT_FILE_NOT_FOUND                     2
-#define EXIT_INVALID_PARAMETERS                 3
-#define EXIT_INCOMPATIBLE_PARAMETERS            4
-#define EXIT_INCOMPLETE_PARAMETERS              5
-#define EXIT_INVALID_FILE                       6
-#define EXIT_WITH_HELP                          10
-#define EXIT_UNKNOWN                            13
+struct Dummy {};
+struct FileNotFound : public std::runtime_error {
+    FileNotFound(std::string reason) noexcept : std::runtime_error(std::move(reason)) {}
+};
+struct InvalidParameters : public std::runtime_error {
+    InvalidParameters(std::string reason) noexcept : std::runtime_error(std::move(reason)) {}
+};
+struct IncompatibleParameters : public std::runtime_error {
+    IncompatibleParameters(std::string reason) noexcept : std::runtime_error(std::move(reason)) {}
+};
+struct IncompleteParameters : public std::runtime_error {
+    IncompleteParameters(std::string reason) noexcept : std::runtime_error(std::move(reason)) {}
+};
+struct InvalidFile : public std::runtime_error {
+    InvalidFile(std::string reason) noexcept : std::runtime_error(std::move(reason)) {}
+};
+struct UnknownError : public std::runtime_error {
+    UnknownError(std::string reason) noexcept : std::runtime_error(std::move(reason)) {}
+};
 
 namespace Colors {
     using ColorFunc = std::ostream&(std::ostream&);
 #ifdef WIN32
 #define NOMINMAX
 #include <Windows.h>
-
+#undef ERROR
     inline void setConsoleColor(short colorCode) {
         static HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
         SetConsoleTextAttribute(hStdout, colorCode);
@@ -103,18 +114,14 @@ public:
         bool _useColor;
     };
 
+    // Exception Type is used to indicate error when there is an exception. It is void for normal logs.
+    template <class ExceptionType = Dummy>
     class Log {
     public:
-        Log(Logger& logger, const char* fileName, const char* funcName, int lineNumber, Level level, const char* levelName, int exitCode = DO_NOT_EXIT)
-            :_logger(logger), _level(level), _exitCode(exitCode) {
-            _ss << "[" << getCurrentTime() << "]" << levelName << " ";
+        Log(Logger& logger, const char* fileName, const char* funcName, int lineNumber, Level level)
+            :_logger(logger), _level(level) {
+            _ss << "[" << getCurrentTime() << "]" << levelTags[level] << " ";
             if (level == error || level == fatal) _ss << fileName << " (" << lineNumber << ") : " << funcName << " | ";
-        }
-        
-        ~Log() {
-            _ss << std::endl;
-            _logger.log(_ss, _level);
-            if (_exitCode != DO_NOT_EXIT) std::exit(_exitCode);
         }
 
         template <typename T>
@@ -123,7 +130,28 @@ public:
             return *this;
         }
 
+        ~Log() noexcept(false) {
+            _ss << std::endl;
+            _logger.log(_ss, _level);
+            if (!std::uncaught_exception()) { // to avoid two uncaught exceptions.
+                throwExceptionIfNeeded();
+            }
+            else {
+                std::cerr << "Another exception occurred during unwinding." << std::endl;
+                std::cerr << "Exception details:" << std::endl
+                    << "Type: " << typeid(ExceptionType).name() << ". " << std::endl
+                    << "Reason: " << _ss.str() << std::endl;
+            }
+        }
+
     private:
+        template<class E = ExceptionType>
+        typename std::enable_if<std::is_same_v<E, Dummy>>::type throwExceptionIfNeeded() {}
+        template<class E = ExceptionType>
+        typename std::enable_if<!std::is_same_v<E, Dummy>>::type throwExceptionIfNeeded() noexcept(false) {
+            throw E(_ss.str());
+        }
+
         static std::string getCurrentTime() {
             char currentTime[16];
             const auto now = std::time(nullptr);
@@ -134,7 +162,6 @@ public:
         Logger& _logger;
         std::stringstream _ss;
         Level _level;
-        int _exitCode;
     };
 
     // It will apply the level to all **existing** sinks. Set level to nolog if you don't want any log.
@@ -167,7 +194,7 @@ inline Logger& getLogger() {
     return logger;
 }
 
-#define loggerstream(level) (Logger::Log(getLogger(), __FILE__, __FUNCTION__, __LINE__, Logger::Level::level, Logger::levelTags[Logger::Level::level]))
+#define loggerstream(level) (Logger::Log<>(getLogger(), __FILE__, __FUNCTION__, __LINE__, Logger::Level::level))
 // Information for tracing
 #define VERBOSE loggerstream(verbose)
 // Information for developers
@@ -179,6 +206,6 @@ inline Logger& getLogger() {
 // Something unexpected happened but can be recovered
 #define ERROR loggerstream(error)
 // Unrecoverable error and program termination is required
-#define FATAL(code) (Logger::Log(getLogger(), __FILE__, __FUNCTION__, __LINE__, Logger::Level::fatal, Logger::levelTags[Logger::Level::fatal], code))
+#define FATAL(exception) (Logger::Log<exception>(getLogger(), __FILE__, __FUNCTION__, __LINE__, Logger::Level::fatal))
 
 #endif
