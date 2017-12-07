@@ -2,16 +2,18 @@ version: '{build}'
 platform:
   - x86
   - x64
-configuration:
-  - Release
+configuration: Release
 clone_folder: C:\ccaligner
 clone_depth: 1
 install:
   - mkdir build && cd build
-  - cmake ../src/
+  - if %PLATFORM% equ x86 cmake -G "Visual Studio 14 2015" ../src/
+  - if %PLATFORM% equ x64 cmake -G "Visual Studio 14 2015 Win64" ../src/
 build:
   project: build/ccaligner.sln
   verbosity: minimal
 on_success:
   - pwd
   - dir c:\ccaligner\build\
+  - xcopy  
+  - 7z a c:\ccaligner.zip .\license > nul
