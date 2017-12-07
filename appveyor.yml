@@ -1,7 +1,7 @@
 version: '{build}'
 platform:
-  - x86
-  - x64
+  - Win32
+  - Win64
 configuration: Release
 clone_folder: C:\ccaligner
 clone_depth: 1
@@ -15,5 +15,8 @@ build:
 on_success:
   - pwd
   - dir c:\ccaligner\build\
-  - xcopy  
-  - 7z a c:\ccaligner.zip .\license > nul
+  - mkdir release
+  - copy build\Release\ccaligner.exe release\
+  - xcopy license\ release\
+  - xcopy install\model release\ /s /e
+  - 7z a c:\ccaligner.zip .\release > nul
