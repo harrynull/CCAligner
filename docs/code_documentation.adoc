@@ -63,7 +63,7 @@ asrAligner,             //using pocketsphinx as ASR
 alignerUnassigned       //no aligner is specified
 ```
 
-2 `outputFormats`	: Enum for various possible output formats.
+2. `outputFormats`	: Enum for various possible output formats.
 
 ```
 srt,
@@ -88,7 +88,8 @@ quick_dict,
 quick_lm,
 no_grammar
 ```
-5. `outputOptions`	: Enum for various output characteristics.
+
+4. `outputOptions`	: Enum for various output characteristics.
 
 ```
 printOnlyRecognised,
@@ -142,14 +143,15 @@ To log:
 DEBUG << "Creating temporary directories at tempFiles/";
 INFO << "Grammar files created!";
 WARNING << "The value is "<<value<<" but it is expected to be " << exceptedValue;
-FATAL(EXIT_INVALID_PARAMETERS) << "Unsupported Aligner Type!";
+FATAL(InvalidParameters) << "Unsupported Aligner Type!";
 ```
 
-VERBOSE: Information for tracing
-DEBUG: Information for developers
-INFO: Information for general users
-WARNING: Problems that may affect facility, performance or stability but may not lead the program to crash immediately
-ERROR(code): Something unexpected happened but can be recoveredc(code): Unrecoverable error and program termination is required. ``code`` will be the exit code of the program (Except for code == DO_NOT_EXIT, where the program won't exit)
+- VERBOSE: Information for tracing
+- DEBUG: Information for developers
+- INFO: Information for general users
+- WARNING: Problems that may affect facility, performance or stability but may not lead the program to crash immediately
+- ERROR: Something unexpected happened but can be recovered
+- FATAL(ExceptionType): Unrecoverable error and program termination is required. `ExceptionType` will be type of exception thrown at the end of the log. It will be constructed by a std::string parameter which is the content of the log.
 
 # generate_approx_timestamp.h and generate_approx_timestamp.cpp
 
