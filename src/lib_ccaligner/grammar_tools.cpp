@@ -74,7 +74,7 @@ void CreateNewGrammarFiles(grammarName name, std::ofstream &corpusDump, std::ofs
 
     if (name == corpus || name == complete_grammar)
     {
-        std::cout << "Creating Corpus : tempFiles/corpus/corpus.txt\n";
+        INFO << "Creating Corpus : tempFiles/corpus/corpus.txt";
 
         try
         {
@@ -89,7 +89,7 @@ void CreateNewGrammarFiles(grammarName name, std::ofstream &corpusDump, std::ofs
 
     if (name == phone_lm || name == complete_grammar)
     {
-        std::cout << "Creating Phonetic Corpus : tempFiles/corpus/phoneticCorpus.txt\n";
+        INFO << "Creating Phonetic Corpus : tempFiles/corpus/phoneticCorpus.txt";
 
         try
         {
@@ -108,7 +108,7 @@ void CreateBiasedLM(grammarName name, bool generateQuickLM) //Create biased lang
     int rv;
     if (name == lm || name == complete_grammar)
     {
-        std::cout << "Creating Biased Language Model : tempFiles/lm/complete.lm\n";
+        INFO << "Creating Biased Language Model : tempFiles/lm/complete.lm";
 
         if (generateQuickLM)
         {
@@ -182,8 +182,8 @@ void GenerateDict(bool generateQuickDict) // Generate dictionary from tensor flo
     }
     else
     {
-        std::cout << "Creating the Dictionary, this might take a little time depending "
-            "on your TensorFlow configuration : tempFiles/dict/complete.dict\n";
+        INFO << "Creating the Dictionary, this might take a little time depending "
+            "on your TensorFlow configuration : tempFiles/dict/complete.dict";
         int rv = systemGetStatus("g2p-seq2seq --decode tempFiles/vocab/complete.vocab --model g2p-seq2seq-cmudict/ > tempFiles/dict/complete.dict");
 
         if (rv != 0)
@@ -415,7 +415,7 @@ bool generate(std::vector <SubtitleItem*> subtitles, grammarName name) //Generat
 
     if (name == phone_lm || name == complete_grammar)
     {
-        std::cout << "Creating Phonetic Language Model : tempFiles/lm/phone.lm\n";
+        INFO << "Creating Phonetic Language Model : tempFiles/lm/phone.lm";
 
         rv = systemGetStatus("perl quick_lm.pl -s tempFiles/corpus/phoneticCorpus.txt 2>tempFiles/grammar.log");
         if (rv != 0)
