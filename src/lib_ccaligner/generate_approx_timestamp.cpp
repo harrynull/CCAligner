@@ -8,14 +8,13 @@
 
 int CurrentSub::_wordNumber;    //defining a static data member
 
-CurrentSub::CurrentSub(SubtitleItem *sub)
+CurrentSub::CurrentSub(SubtitleItem *sub) noexcept
+    : _sub(sub),
+      _sentenceLength(sub->getDialogue().size()),
+      _wordCount(sub->getWordCount()),
+      _dialogueDuration(getDuration(sub->getStartTime(), sub->getEndTime()))
 {
-    _sub = sub;
     _wordNumber = 0;
-    _sentenceLength = _sub->getDialogue().size();   //length of a complete dialogue in current subtitle
-    _wordCount = _sub->getWordCount();              //no. of words in current subtitle
-    _dialogueDuration = getDuration(_sub->getStartTime(), _sub->getEndTime());
-
 }
 
 void CurrentSub::printToSRT(const std::string& fileName, outputOptions printOption) const
@@ -74,8 +73,7 @@ inline int CurrentSub::getDuration (long startTime, long endTime) const noexcept
 {
     if(endTime < startTime)
     {
-        std::cout << "Error! Incorrect start time and end time of the dialogue.\n";
-        return -1;
+        FATAL(InvalidFile) << "Error! Incorrect start time and end time of the dialogue.";
     }
 
     return endTime - startTime;
@@ -92,7 +90,7 @@ inline double CurrentSub::getWordWeight (const std::string& word) const noexcept
 void CurrentSub::assignTime(long int &wordDuration, const std::string &word )
 {
     if(_wordNumber>_wordCount)
-        std::cout<<"Oops! Something went wrong!\n";
+        FATAL(UnknownError) << "Oops! Something went wrong!";
 
     double wordWeight = getWordWeight(word);
     wordDuration = wordWeight * _dialogueDuration;
@@ -131,14 +129,13 @@ void CurrentSub::run()
 }
 
 
-NonAlignedBlock::NonAlignedBlock()
-{
-    wordLength = 0;
-    startTime = 0;
-    endTime = 0;
-    startIndex = 0;
-    endIndex = 0;
-}
+NonAlignedBlock::NonAlignedBlock() noexcept
+    : wordLength(),
+      startTime(),
+      endTime(),
+      startIndex(),
+      endIndex()
+{}
 
 void CurrentSub::alignNonRecognised(recognisedBlock currBlock)
 {
@@ -182,20 +179,18 @@ void CurrentSub::alignNonRecognised(recognisedBlock currBlock)
 
 }
 
-ApproxAligner::ApproxAligner(const std::string& fileName, outputFormats outputFormat)
-{
-    _fileName = fileName;
-    _outputFormat = outputFormat;
-    _outputFileName = extractFileName(_fileName);
-}
+ApproxAligner::ApproxAligner(std::string fileName, outputFormats outputFormat) noexcept
+    : _fileName(std::move(fileName)),
+      _outputFormat(outputFormat),
+      _outputFileName(extractFileName(_fileName))
+{}
 
-ApproxAligner::ApproxAligner(Params * parameters)
-{
-    _parameters = parameters;
-    _fileName = _parameters->subtitleFileName;
-    _outputFormat = _parameters->outputFormat;
-    _outputFileName = _parameters->outputFileName;
-}
+ApproxAligner::ApproxAligner(Params * parameters) noexcept
+    : _parameters(parameters),
+      _fileName(parameters->subtitleFileName),
+      _outputFormat(parameters->outputFormat),
+      _outputFileName(parameters->outputFileName)
+{}
 
 std::vector<SubtitleItem *, std::allocator<SubtitleItem *>> ApproxAligner::align()
 {
@@ -213,7 +208,7 @@ std::vector<SubtitleItem *, std::allocator<SubtitleItem *>> ApproxAligner::align
 
         switch (_outputFormat)  //decide on basis of set output format
         {
-            case srt:       subCount = printSRTContinuous(_outputFileName, subCount, sub, printBothWihoutColors);
+            case srt:       subCount = printSRTContinuous(_outputFileName, subCount, sub, printBothWithoutColors);
                 break;
 
             case xml:       printXMLContinuous(_outputFileName, sub);
@@ -222,14 +217,13 @@ std::vector<SubtitleItem *, std::allocator<SubtitleItem *>> ApproxAligner::align
             case json:      printJSONContinuous(_outputFileName, sub);
                 break;
 
-            case karaoke:   subCount = printKaraokeContinuous(_outputFileName, subCount, sub, printBothWihoutColors);
+            case karaoke:   subCount = printKaraokeContinuous(_outputFileName, subCount, sub, printBothWithoutColors);
                 break;
 
             case console:   currSub.printToConsole(_outputFileName);
                 break;
 
-            default:        std::cout<<"An error occurred while choosing output format!";
-                exit(2);
+            default:        FATAL(UnknownError) << "An error occurred while choosing output format!";
         }
 
     }
