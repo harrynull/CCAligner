@@ -97,7 +97,7 @@ public:
             if (_useColor) _os << *colors[level];
             _os << ss.str();
             if (_useColor) _os << Colors::cdefault; // change back to the deafult color
-            if (level == error || level == fatal || true) flush(); // flush immediately to prevent data loss.
+            flush(); // flush immediately to prevent data loss.
         }
 
         // Set thte minimum output level.
@@ -131,7 +131,7 @@ public:
             return *this;
         }
 
-        ~Log() noexcept(false) {
+        ~Log() noexcept(noexcept(throwExceptionIfNeeded())) {
             _ss << std::endl;
             _logger.log(_ss, _level);
             if (!std::uncaught_exception()) { // to avoid two uncaught exceptions.
@@ -147,16 +147,16 @@ public:
 
     private:
         template<class E = ExceptionType>
-        typename std::enable_if<std::is_same<E, Dummy>::value>::type throwExceptionIfNeeded() {}
+        typename std::enable_if<std::is_same<E, Dummy>::value>::type throwExceptionIfNeeded() noexcept {}
         template<class E = ExceptionType>
-        typename std::enable_if<!std::is_same<E, Dummy>::value>::type throwExceptionIfNeeded() noexcept(false) {
+        typename std::enable_if<!std::is_same<E, Dummy>::value>::type throwExceptionIfNeeded() {
             throw E(_ss.str());
         }
 
         static std::string getCurrentTime() {
             char currentTime[16];
             const auto now = std::time(nullptr);
-            std::strftime(currentTime, 16, "%m-%d %H:%M:%S", std::localtime(&now));
+            std::strftime(currentTime, sizeof(currentTime), "%m-%d %H:%M:%S", std::localtime(&now));
             return std::string(currentTime);
         }
 
