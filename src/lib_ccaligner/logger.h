@@ -150,7 +150,7 @@ public:
             return *this;
         }
 
-        ~Log() noexcept(noexcept(throwExceptionIfNeeded())) {
+        ~Log() noexcept(noexcept(this->throwExceptionIfNeeded())) {
             _ss << std::endl;
             _logger.log(_ss, _level);
             if (!std::uncaught_exception()) { // to avoid two uncaught exceptions.
