@@ -118,25 +118,6 @@ public:
     // Exception Type is used to indicate error when there is an exception. It is void for normal logs.
     template <class ExceptionType = Dummy>
     class Log {
-    private:
-        template<class E = ExceptionType>
-        typename std::enable_if<std::is_same<E, Dummy>::value>::type throwExceptionIfNeeded() noexcept {}
-        template<class E = ExceptionType>
-        typename std::enable_if<!std::is_same<E, Dummy>::value>::type throwExceptionIfNeeded() {
-            throw E(_ss.str());
-        }
-
-        static std::string getCurrentTime() {
-            char currentTime[16];
-            const auto now = std::time(nullptr);
-            std::strftime(currentTime, sizeof(currentTime), "%m-%d %H:%M:%S", std::localtime(&now));
-            return std::string(currentTime);
-        }
-
-        Logger& _logger;
-        std::stringstream _ss;
-        Level _level;
-
     public:
         Log(Logger& logger, const char* fileName, const char* funcName, int lineNumber, Level level)
             :_logger(logger), _level(level) {
@@ -150,7 +131,7 @@ public:
             return *this;
         }
 
-        ~Log() noexcept(noexcept(this->throwExceptionIfNeeded())) {
+        ~Log() noexcept(noexcept(std::is_same<ExceptionType, Dummy>::value)) {
             _ss << std::endl;
             _logger.log(_ss, _level);
             if (!std::uncaught_exception()) { // to avoid two uncaught exceptions.
@@ -163,6 +144,25 @@ public:
                     << "Reason: " << _ss.str() << std::endl;
             }
         }
+    private:
+            template<class E = ExceptionType>
+            typename std::enable_if<std::is_same<E, Dummy>::value>::type throwExceptionIfNeeded() noexcept {}
+            template<class E = ExceptionType>
+            typename std::enable_if<!std::is_same<E, Dummy>::value>::type throwExceptionIfNeeded() {
+                throw E(_ss.str());
+            }
+
+            static std::string getCurrentTime() {
+                char currentTime[16];
+                const auto now = std::time(nullptr);
+                std::strftime(currentTime, sizeof(currentTime), "%m-%d %H:%M:%S", std::localtime(&now));
+                return std::string(currentTime);
+            }
+
+            Logger& _logger;
+            std::stringstream _ss;
+            Level _level;
+
     };
 
     // It will apply the level to all **existing** sinks. Set level to nolog if you don't want any log.
