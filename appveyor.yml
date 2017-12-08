@@ -2,9 +2,6 @@ version: '{build}'
 platform:
   - Win32
   - x64
-PYTHON: "C:\\Python27-x64"
-PYTHON_VERSION: "2.7.x"
-PYTHON_ARCH: "64"
 configuration: Release
 clone_folder: C:\ccaligner
 clone_depth: 1
@@ -24,7 +21,8 @@ on_success:
   - copy install\quick_lm.pl release\ > nul
   # perl, dependencies
   # g2p-seq2seq
-  - pip install tensorflow==1.0.0
+  - dir c:\
+  - C:\Python27-x64\python.exe -m pip install tensorflow==1.0.0
   - git clone https://github.com/cmusphinx/g2p-seq2seq.git
   - cd g2p-seq2seq && python setup.py install && cd ..
   # cmuclmtk
