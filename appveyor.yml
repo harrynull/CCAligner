@@ -20,6 +20,16 @@ on_success:
   - xcopy install\g2p-seq2seq-cmudict release /s /e > nul
   - copy install\quick_lm.pl release\ > nul
   # perl, dependencies
+  # g2p-seq2seq
+  - pip install tensorflow==1.0.0
+  - git clone https://github.com/cmusphinx/g2p-seq2seq.git
+  - cd g2p-seq2seq && python setup.py install && cd ..
+  # cmuclmtk
+  - ps: Start-FileDownload 'https://downloads.sourceforge.net/project/cmusphinx/cmuclmtk/0.7/cmuclmtk-0.7.tar.gz'
+  - tar xzvf cmuclmtk-0.7.tar.gz
+  - dir
+  - cd cmuclmtk-0.7
+  - dir
   - 7z a ccaligner.zip .\release > nul
   - if %PLATFORM% equ x64 rename ccaligner.zip ccaligner_x64.zip
   - if %PLATFORM% equ x64 (appveyor PushArtifact ccaligner_x64.zip) else (appveyor PushArtifact ccaligner.zip)
