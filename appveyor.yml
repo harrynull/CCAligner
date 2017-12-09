@@ -26,8 +26,7 @@ on_success:
   - copy install\quick_lm.pl release\ > nul
   # perl, dependencies
   # g2p-seq2seq
-  - python --version
-  - python -m pip install tensorflow==1.0.0
+  - C:\Python26-x64\python.exe -m pip install tensorflow==1.0.0
   - git clone https://github.com/cmusphinx/g2p-seq2seq.git
   - cd g2p-seq2seq && python setup.py install && cd ..
   # cmuclmtk
